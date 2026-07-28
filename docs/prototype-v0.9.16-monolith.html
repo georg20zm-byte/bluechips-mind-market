@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Blue Chips: Mind Market · v0.8</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#07080B; --panel:#14181E; --panel2:#0D1015; --line:#1E2230;
+    --text:#E8ECF1; --muted:#6B7484; --dim:#A8B0BE;
+    --me:#38E1EA; --foe:#FF3B4E; --gold:#F0BE3C; --pink:#F050C8;
+    --mono:'JetBrains Mono',monospace; --ui:'Manrope',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden;background:var(--bg)}
+  body{font-family:var(--ui);color:var(--text);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+  #root{max-width:430px;margin:0 auto;height:100dvh;position:relative;overflow:hidden}
+  .scr{position:absolute;inset:0;display:flex;flex-direction:column}
+  .hidden{display:none!important}
+
+  /* ═══ MARKET ═══ */
+  #mktTop{padding:14px 14px 10px;display:flex;justify-content:space-between;align-items:center}
+  #mktLogo{font:800 16px var(--ui);letter-spacing:-.3px}
+  #mktLogo span{color:var(--me)}
+  #balNum{font:800 20px var(--mono);color:var(--gold)}
+  #balLbl{font:700 8px var(--mono);letter-spacing:1.5px;color:var(--muted);text-align:right}
+  #tabs{display:flex;gap:6px;padding:0 14px 10px}
+  .tab{flex:1;text-align:center;font:800 11px var(--mono);letter-spacing:1px;padding:8px 0;border:1px solid var(--line);border-radius:8px;color:var(--muted);cursor:pointer}
+  .tab.on{color:var(--text);border-color:var(--dim);background:var(--panel)}
+  #mktList,#mktList2{flex:1;overflow-y:auto;padding:0 14px 20px;display:flex;flex-direction:column;gap:10px}
+  .ev{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .evQ{font:600 14px var(--ui);line-height:1.3}
+  .evMeta{font:700 9px var(--mono);color:var(--muted);letter-spacing:1px;margin-top:4px}
+  .evBar{height:5px;border-radius:3px;background:var(--foe);margin-top:9px;overflow:hidden}
+  .evBarY{height:100%;background:var(--me)}
+  .evBtns{display:flex;gap:8px;margin-top:9px}
+  .evBtn{flex:1;text-align:center;border-radius:9px;padding:9px 0;font:800 13px var(--mono);cursor:pointer;transition:transform .08s}
+  .evBtn:active{transform:scale(.95)}
+  .evBtn.y{background:rgba(56,225,234,.12);border:1px solid rgba(56,225,234,.5);color:var(--me)}
+  .evBtn.n{background:rgba(255,59,78,.12);border:1px solid rgba(255,59,78,.5);color:var(--foe)}
+  .evBtn small{display:block;font:700 8px var(--mono);color:var(--muted);letter-spacing:.5px;margin-top:1px}
+  .pos{margin-top:9px;border-top:1px dashed var(--line);padding-top:8px;font:700 10.5px var(--mono);color:var(--dim);display:flex;justify-content:space-between;align-items:center}
+  .pos .pv{color:var(--gold)}
+  .resolved{font:800 12px var(--mono);margin-top:9px;padding:7px;border-radius:8px;text-align:center}
+  .devBtn{font:700 8px var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:3px 6px;cursor:pointer}
+  .pack{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center}
+  .pack .pic{font-size:26px}
+  .pack .nm{font:800 13px var(--ui)}
+  .pack .ds{font:600 10.5px var(--ui);color:var(--muted);margin-top:2px;line-height:1.3}
+  .pack .buy{margin-left:auto;flex:0 0 auto;text-align:center;border:1px solid var(--gold);color:var(--gold);border-radius:8px;padding:7px 10px;font:800 11px var(--mono);opacity:.55}
+  .pack .buy small{display:block;font-size:7.5px;letter-spacing:1px;color:var(--muted)}
+
+  /* ═══ SHEET / POPUPS ═══ */
+  #sheetWrap{position:absolute;inset:0;background:rgba(7,8,11,.7);z-index:30;display:flex;align-items:flex-end;backdrop-filter:blur(3px)}
+  #sheet{width:100%;background:var(--panel);border-radius:16px 16px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+  #shQ{font:600 13px var(--ui);color:var(--dim)}
+  #shSide{font:800 18px var(--mono);margin-top:4px}
+  #shPrice{font:700 10px var(--mono);color:var(--muted);margin-top:2px}
+  #amtRow{display:flex;gap:10px;align-items:center;margin-top:14px}
+  #amtSlider{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:var(--panel2);outline:none;touch-action:none}
+  #amtSlider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px rgba(240,190,60,.5);cursor:pointer}
+  #amtInput{width:84px;background:var(--panel2);border:1px solid var(--gold);border-radius:9px;color:var(--gold);font:800 16px var(--mono);text-align:center;padding:9px 4px;outline:none}
+  #shCalc{display:flex;justify-content:space-between;margin-top:12px;font:700 11px var(--mono);color:var(--dim)}
+  #shCalc b{color:var(--me);font-size:14px}
+  #shConfirm{margin-top:14px;background:var(--me);color:#06171A;text-align:center;font:800 14px var(--mono);letter-spacing:1px;padding:14px;border-radius:10px;cursor:pointer}
+  #shCancel{text-align:center;font:700 11px var(--mono);color:var(--muted);padding:10px;cursor:pointer}
+  #duelWrap,#champWrap{position:absolute;inset:0;background:rgba(7,8,11,.88);z-index:31;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
+  #duel{width:88%;max-width:340px;background:var(--panel);border:1px solid var(--gold);border-radius:16px;padding:20px;text-align:center;box-shadow:0 0 40px rgba(240,190,60,.15)}
+  #duelIco{font-size:34px}
+  #duelTitle{font:800 17px var(--ui);margin-top:8px}
+  #duelSub{font:600 12px var(--ui);color:var(--dim);margin-top:6px;line-height:1.4}
+  #duelFoe{margin-top:12px;border:1px dashed var(--line);border-radius:10px;padding:9px;font:700 11px var(--mono)}
+  #duelFoe .fn{color:var(--foe);font-size:13px}
+  #duelGo{margin-top:14px;background:var(--gold);color:#1A1206;font:800 13px var(--mono);letter-spacing:1px;padding:13px;border-radius:10px;cursor:pointer}
+  #duelLater{font:700 11px var(--mono);color:var(--muted);padding:10px;cursor:pointer;margin-top:4px}
+  /* champion select */
+  #champBox{width:92%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center}
+  #champTitle{font:800 16px var(--ui)}
+  #champFoeInfo{font:700 10.5px var(--mono);color:var(--dim);margin-top:6px}
+  #champFoeInfo b{color:var(--foe)}
+  #champRow{display:flex;gap:8px;margin-top:14px}
+  .champCard{flex:1;border:1px solid var(--line);background:var(--panel2);border-radius:12px;padding:12px 6px;cursor:pointer;transition:.15s}
+  .champCard:active{transform:scale(.95)}
+  .champCard .ci{font-size:34px}
+  .champCard .cn{font:800 10px var(--mono);letter-spacing:.5px;margin-top:6px;color:var(--gold)}
+  .champCard .cdsc{font:600 9px var(--ui);color:var(--muted);margin-top:5px;line-height:1.35}
+
+  /* ═══ BATTLE ═══ */
+  #bTop{padding:8px 12px 4px;flex:0 0 auto}
+  #barRow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  #timer{font:800 22px var(--mono);letter-spacing:1px;line-height:1;text-align:center}
+  #timer.ot{color:var(--foe);animation:otPulse .6s infinite}
+  @keyframes otPulse{50%{opacity:.5}}
+  #phaseLbl{font:800 9px var(--mono);letter-spacing:1.5px;color:var(--gold);margin-top:1px;text-align:center}
+  .fighter{font:800 10px var(--mono);letter-spacing:.5px}
+  .fighter .fc{font-size:16px;vertical-align:middle;margin-right:3px}
+  #bQuestion{font:600 10.5px var(--ui);color:var(--muted);text-align:center;margin-top:4px;line-height:1.2}
+  #cwrap{flex:1 1 auto;position:relative;min-height:0}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  #alert{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%) scale(.9);font:800 15px var(--mono);letter-spacing:1px;color:var(--foe);opacity:0;transition:.22s;z-index:6;text-align:center;pointer-events:none;text-shadow:0 0 18px rgba(255,59,78,.6);max-width:90%}
+  #alert.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  #alert.glitch{animation:glitch .35s steps(2) infinite}
+  @keyframes glitch{25%{transform:translate(-52%,-51%) skewX(6deg)}50%{transform:translate(-48%,-50%) skewX(-6deg)}75%{transform:translate(-50%,-49%) skewX(3deg)}}
+  #hintTip{position:absolute;left:12px;right:12px;bottom:8px;background:rgba(240,190,60,.1);border:1px solid rgba(240,190,60,.45);border-radius:8px;padding:6px 10px;font:600 11.5px var(--ui);color:var(--gold);opacity:0;transition:.3s;z-index:5;text-align:center;pointer-events:none}
+  #hintTip.show{opacity:1}
+  #stunOverlay{position:absolute;inset:0;background:rgba(255,59,78,.08);z-index:4;display:none;pointer-events:none}
+  #stunOverlay.show{display:block;animation:stunFlicker .2s infinite}
+  @keyframes stunFlicker{50%{background:rgba(255,59,78,.16)}}
+
+  /* ═══ CR-style HUD ═══ */
+  #hud{flex:0 0 auto;padding:5px 8px calc(8px + env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,rgba(7,8,11,.95) 20%)}
+  #apRow{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  #apNum{font:800 19px var(--mono);color:var(--gold);min-width:52px}
+  #apNum span{font-size:9px;color:var(--muted)}
+  #apBar{flex:1;height:8px;background:var(--panel);border-radius:4px;overflow:hidden}
+  #apFill{height:100%;width:0%;background:linear-gradient(90deg,#D99A22,var(--gold));border-radius:4px}
+  #heatWrap{display:flex;align-items:center;gap:5px}
+  #heatLbl{font:800 8px var(--mono);letter-spacing:1px;color:var(--muted)}
+  #heatBar{width:46px;height:8px;background:var(--panel);border-radius:4px;overflow:hidden;position:relative}
+  #heatFill{height:100%;width:0%;background:var(--foe);border-radius:4px;transition:width .15s}
+  #heatBar::after{content:'';position:absolute;right:22%;top:-2px;bottom:-2px;width:1.5px;background:rgba(255,59,78,.7)}
+  #scanBtn{border:1px solid rgba(240,80,200,.5);border-radius:8px;padding:4px 8px;font:800 10px var(--mono);color:var(--pink);cursor:pointer;position:relative;overflow:hidden}
+  #scanBtn .cd{position:absolute;left:0;right:0;bottom:0;background:rgba(7,8,11,.75);height:0%}
+
+  #handRow{display:grid;grid-template-columns:1.05fr 1fr 1fr 1fr 1fr .5fr;gap:5px;align-items:stretch}
+  #handRow.nochamp{grid-template-columns:1fr 1fr 1fr 1fr .5fr}
+  #handRow.nochamp #champBtn{display:none}
+  /* ── туториал ── */
+  #hud{position:relative}
+  #tutShade{position:absolute;inset:0;background:rgba(4,5,8,.72);z-index:8;pointer-events:none;border-radius:8px}
+  #tutText{position:absolute;left:14px;right:14px;top:16%;z-index:9;background:var(--panel);border:1.5px solid var(--gold);border-radius:12px;padding:12px 14px;font:700 14px var(--ui);line-height:1.4;text-align:center;box-shadow:0 0 30px rgba(240,190,60,.25);pointer-events:none}
+  #tutText b{color:var(--gold)}
+  .tutHi{z-index:9;animation:tutPulse .9s infinite;border-color:#fff!important}
+  #scanBtn.tutHi{position:relative}
+  @keyframes tutPulse{0%,100%{box-shadow:0 0 0 0 rgba(240,190,60,.7);transform:translateY(0)}50%{box-shadow:0 0 0 8px rgba(240,190,60,0);transform:translateY(-5px)}}
+  .bigcard{touch-action:none;-webkit-user-drag:none;position:relative;border:2px solid var(--line);background:var(--panel2);border-radius:12px;padding:6px 2px 20px;text-align:center;cursor:pointer;transition:transform .08s;overflow:hidden;min-height:96px;display:flex;flex-direction:column;justify-content:center}
+  .bigcard:active{transform:scale(.93)}
+  .bigcard .ico{font-size:30px;line-height:1.05}
+  .bigcard .fn{font:800 8px var(--mono);letter-spacing:.2px;margin-top:3px;line-height:1.1;color:var(--text)}
+  .bigcard .cost{position:absolute;top:4px;left:4px;background:var(--gold);color:#1A1206;font:800 10px var(--mono);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 8px rgba(240,190,60,.4);z-index:2}
+  /* лента типа на всю ширину: считывается мгновенно */
+  .bigcard .band{position:absolute;left:0;right:0;bottom:0;font:800 10.5px var(--mono);letter-spacing:1.5px;padding:5px 0;color:#07080B}
+  .bigcard.tUnit{border-color:var(--me);background:linear-gradient(180deg,rgba(56,225,234,.16),var(--panel2) 70%)}
+  .bigcard.tUnit .band{background:var(--me)}
+  .bigcard.tTower{border-color:var(--gold);background:linear-gradient(180deg,rgba(240,190,60,.16),var(--panel2) 70%)}
+  .bigcard.tTower .band{background:var(--gold)}
+  .bigcard.tSpell{border-color:var(--pink);background:linear-gradient(180deg,rgba(240,80,200,.16),var(--panel2) 70%)}
+  .bigcard.tSpell .band{background:var(--pink)}
+  .bigcard.selected{border-color:#fff;box-shadow:0 0 14px rgba(232,236,241,.4);transform:translateY(-6px)}
+  .bigcard.poor .cost{background:var(--muted);box-shadow:none}
+  .bigcard.poor{opacity:.55}
+  .bigcard.locked{pointer-events:none;opacity:.35}
+  /* чемпион: отдельная сущность, не смешивается с рядовыми */
+  #champBtn{border:2px solid var(--gold);border-radius:14px;background:radial-gradient(120% 90% at 50% 0%,#2E2410,var(--panel2));animation:champGlow 2.2s infinite;margin-right:2px}
+  @keyframes champGlow{0%,100%{box-shadow:0 0 6px rgba(240,190,60,.25)}50%{box-shadow:0 0 18px rgba(240,190,60,.55)}}
+  #champBtn .ico{font-size:32px}
+  #champBtn .crown{position:absolute;top:3px;right:4px;font-size:13px;filter:drop-shadow(0 0 4px rgba(240,190,60,.8));z-index:2}
+  #champBtn .mm{position:absolute;bottom:2px;left:0;right:0;font:800 6px var(--mono);letter-spacing:1.2px;color:var(--gold);opacity:.85}
+  #champBtn .cd{position:absolute;left:0;right:0;bottom:0;background:rgba(7,8,11,.8);height:0%;pointer-events:none}
+  #champBtn .nm{color:var(--gold)}
+  /* next preview */
+  #nextCard{border:1px dashed var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.65}
+  #nextCard .ni{font-size:18px}
+  #nextCard .nl{font:700 6.5px var(--mono);color:var(--muted);letter-spacing:.5px;margin-top:3px}
+
+  .bigcard .lv{position:absolute;top:4px;right:4px;font:800 7.5px var(--mono);color:var(--dim);border:1px solid var(--line);border-radius:5px;padding:1.5px 4px;background:rgba(7,8,11,.6);z-index:2}
+  /* витрина анлока */
+  #unlockRow{margin-top:16px;border:1.5px solid var(--gold);border-radius:12px;padding:12px 16px;background:rgba(240,190,60,.07);max-width:320px;animation:champGlow 2.2s infinite}
+  #unlockRow .ut{font:800 10px var(--mono);letter-spacing:2px;color:var(--gold)}
+  #unlockRow .un{font:800 16px var(--ui);margin-top:4px}
+  #unlockRow .ud{font:600 11px var(--ui);color:var(--dim);margin-top:3px;line-height:1.35}
+  /* конструктор колоды */
+  #deckWrap{position:absolute;inset:0;background:rgba(7,8,11,.96);z-index:32;display:flex;flex-direction:column;padding:14px;overflow-y:auto}
+  #deckHead{display:flex;justify-content:space-between;align-items:center}
+  #deckTitle{font:800 16px var(--ui)}
+  #deckTimer{font:800 18px var(--mono);color:var(--gold)}
+  #deckOpp{font:700 10px var(--mono);color:var(--muted);margin-top:3px;letter-spacing:.5px}
+  #deckIntro{font:600 11px var(--ui);color:var(--dim);margin-top:8px;border:1px dashed var(--line);border-radius:9px;padding:8px 10px;line-height:1.4}
+  #deckRow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+  #collGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;padding-bottom:8px}
+  .mini{position:relative;border:1.5px solid var(--line);border-radius:10px;background:var(--panel2);padding:4px 2px 34px;text-align:center;cursor:pointer;min-height:86px;overflow:hidden;touch-action:none}
+  .mini .ico{font-size:22px;line-height:1.05}
+  .mini .cost{position:absolute;top:3px;left:3px;background:var(--gold);color:#1A1206;font:800 8.5px var(--mono);border-radius:50%;width:17px;height:17px;display:flex;align-items:center;justify-content:center}
+  .mini .lv{position:absolute;top:3px;right:3px;font:800 7px var(--mono);color:var(--dim);border:1px solid var(--line);border-radius:4px;padding:1px 3px;background:rgba(7,8,11,.6)}
+  .mini .band{position:absolute;left:0;right:0;bottom:0;font:800 8.5px var(--mono);letter-spacing:1px;padding:3.5px 0;color:#07080B}
+  .mini.tUnit{border-color:rgba(56,225,234,.55)} .mini.tUnit .band{background:var(--me)}
+  .mini.tTower{border-color:rgba(240,190,60,.55)} .mini.tTower .band{background:var(--gold)}
+  .mini.tSpell{border-color:rgba(240,80,200,.55)} .mini.tSpell .band{background:var(--pink)}
+  .mini.sel{border-color:#fff;box-shadow:0 0 10px rgba(232,236,241,.4)}
+  .mini.inDeck::after{content:'В ПОРТФЕЛЕ';position:absolute;bottom:26px;left:0;right:0;font:800 6.5px var(--mono);color:var(--me);letter-spacing:.5px;text-shadow:0 1px 3px rgba(7,8,11,.9)}
+  .mini.lock{opacity:.45;filter:grayscale(1)}
+  .mini.lock .how{position:absolute;top:24px;left:2px;right:2px;font:600 6.5px var(--ui);color:var(--dim);line-height:1.2}
+  .mini .up{position:absolute;bottom:14px;left:0;right:0;font:800 7.5px var(--mono);color:var(--gold)}
+  #deckFrame{border:1.5px solid rgba(56,225,234,.4);border-radius:14px;padding:9px;margin-top:12px;background:rgba(56,225,234,.03)}
+  #collFrame{border:1.5px solid var(--line);border-radius:14px;padding:9px;margin-top:12px;background:rgba(107,116,132,.03)}
+  #deckLbl{font:800 9px var(--mono);letter-spacing:1.5px;color:var(--me);margin:0 0 8px 2px}
+  #collLbl{font:800 9px var(--mono);letter-spacing:1.5px;color:var(--muted);margin:0 0 8px 2px}
+  #deckRow,#collGrid{margin-top:0!important}
+  .mini.empty{border-style:dashed;display:flex;align-items:center;justify-content:center;font:800 26px var(--mono);color:var(--muted);padding:0}
+  #dragGhost{position:fixed;z-index:40;width:84px;opacity:.75;pointer-events:none;transform:translate(-50%,-60%) scale(1.05);filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}
+  .tab.lockT{opacity:.45}
+  #deckOB{border:1.5px solid var(--gold);border-radius:10px;padding:9px 12px;font:700 12.5px var(--ui);margin-top:10px;background:rgba(240,190,60,.08);text-align:center;line-height:1.4;box-shadow:0 0 20px rgba(240,190,60,.15)}
+  #deckOB b{color:var(--gold)}
+  .obHi{animation:tutPulse .9s infinite;border-color:#fff!important}
+  #deckReady.off{opacity:.35;pointer-events:none}
+  #obHand{position:fixed;z-index:41;pointer-events:none;width:46px;height:52px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.65))}
+  .mini.dropHi{border-color:#fff;box-shadow:0 0 12px rgba(232,236,241,.5)}
+  .mini .upA{position:absolute;top:21px;right:3px;width:15px;height:15px;background:var(--me);color:#06171A;border-radius:4px;font:800 11px var(--mono);display:flex;align-items:center;justify-content:center;box-shadow:0 0 7px rgba(56,225,234,.65)}
+  /* страница карты */
+  #cardWrap{position:absolute;inset:0;background:rgba(7,8,11,.9);z-index:33;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
+  #cardBox{width:88%;max-width:330px;background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:0 0 16px;overflow:hidden;text-align:center}
+  #cbBand{font:800 11px var(--mono);letter-spacing:2px;padding:7px 0;color:#07080B}
+  #cbIco{font-size:52px;margin-top:14px;line-height:1}
+  #cbName{font:800 19px var(--ui);margin-top:6px}
+  #cbLvl{font:800 11px var(--mono);color:var(--gold);margin-top:3px;letter-spacing:1px}
+  #cbDesc{font:600 12px var(--ui);color:var(--dim);line-height:1.45;margin:10px 16px 0}
+  #cbStats{margin:12px 16px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .cbRow{display:flex;justify-content:space-between;padding:7px 12px;font:700 11px var(--mono);border-bottom:1px solid var(--line)}
+  .cbRow:last-child{border-bottom:none}
+  .cbRow .l{color:var(--muted)} .cbRow .v{color:var(--text)}
+  #cbUp{margin:14px 16px 0;background:var(--me);color:#06171A;font:800 13px var(--mono);letter-spacing:.5px;padding:13px;border-radius:10px;cursor:pointer}
+  #cbUp.off{background:var(--panel2);color:var(--muted);border:1px solid var(--line);pointer-events:none}
+  #cbUpNote{font:700 9.5px var(--mono);color:var(--muted);margin-top:7px;letter-spacing:.5px}
+  #cbClose{font:700 11px var(--mono);color:var(--muted);padding:10px;cursor:pointer;margin-top:2px}
+  @keyframes lvPop{0%{transform:scale(1)}40%{transform:scale(1.45);color:#fff;text-shadow:0 0 16px var(--gold)}100%{transform:scale(1)}}
+  #cbLvl.pop{animation:lvPop .55s}
+  .qfly{position:absolute;font:800 14px var(--mono);color:var(--foe);animation:qflyA .8s forwards;pointer-events:none;z-index:5}
+  @keyframes qflyA{0%{opacity:1;margin-top:0}100%{opacity:0;margin-top:-30px}}
+  @keyframes stFlash{35%{border-color:var(--gold);box-shadow:0 0 14px rgba(240,190,60,.4)}}
+  #cbStats.flash{animation:stFlash .55s}
+  #cbLock{margin:12px 16px 0;border:1px dashed var(--line);border-radius:10px;padding:10px;font:700 11px var(--mono);color:var(--dim)}
+  /* витрина анлока: разделитель и список типов */
+  .usep{height:1px;background:rgba(240,190,60,.35);margin:10px 0}
+  .ulist{font:700 13px var(--ui);margin-top:6px;display:flex;flex-direction:column;gap:4px;width:max-content;margin-left:auto;margin-right:auto;text-align:left}
+  #deckReady{margin-top:12px;background:var(--me);color:#06171A;text-align:center;font:800 14px var(--mono);letter-spacing:1px;padding:13px;border-radius:10px;cursor:pointer;flex:0 0 auto}
+  .overlay{position:absolute;inset:0;background:rgba(7,8,11,.94);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:20;padding:24px;text-align:center;backdrop-filter:blur(6px)}
+  #countNum{font:800 90px var(--mono);color:var(--gold);text-shadow:0 0 40px rgba(240,190,60,.4)}
+  #matchTitle{font:800 28px var(--ui)}
+  #matchOko{font:800 13px var(--mono);margin-top:8px;color:var(--muted);letter-spacing:1px}
+  #matchReward{font:800 22px var(--mono);color:var(--gold);margin-top:14px}
+  .cta{margin-top:20px;background:var(--me);color:#06171A;font:800 15px var(--mono);letter-spacing:1px;padding:14px 40px;border-radius:10px;cursor:pointer}
+  .cta:active{transform:scale(.95)}
+</style>
+</head>
+<body>
+<div id="root">
+
+  <!-- ═══ MARKET ═══ -->
+  <div class="scr" id="scrMarket">
+    <div id="mktTop">
+      <div id="mktLogo">BLUE CHIPS <span>MIND MARKET</span><div style="font:700 8px var(--mono);color:var(--muted);letter-spacing:2px;margin-top:2px">v0.9.16</div></div>
+      <div style="text-align:right">
+        <div style="display:flex;gap:10px;justify-content:flex-end;align-items:baseline">
+          <span id="chipsNum" style="font:800 15px var(--mono);color:#5B9BFF">5 🔷</span>
+          <span id="balNum" style="font:800 18px var(--mono);color:var(--gold)">100 ⟠</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:4px">
+          <span id="plvlNum" style="font:800 9px var(--mono);color:var(--me);letter-spacing:1px">УР. 1</span>
+          <div style="width:56px;height:5px;background:var(--panel);border-radius:3px;overflow:hidden"><div id="plvlFill" style="height:100%;width:0%;background:var(--me)"></div></div>
+        </div>
+      </div>
+    </div>
+    <div id="tabs">
+      <div class="tab on" data-t="mkt">СОБЫТИЯ</div>
+      <div class="tab" data-t="deck">💼 ПОРТФЕЛЬ</div>
+      <div class="tab" data-t="shop">НАБОРЫ</div>
+    </div>
+    <div id="mktList"></div>
+    <div id="mktList2" class="hidden"></div>
+  </div>
+
+  <!-- конструктор колоды -->
+  <div id="deckWrap" class="hidden">
+    <div id="deckHead"><div><div id="deckTitle">БОЕВОЙ ПОРТФЕЛЬ</div><div id="deckOpp"></div></div>
+      <div style="text-align:right"><div id="deckTimer"></div><div id="deckQ" style="font:800 11px var(--mono);color:var(--gold);margin-top:3px"></div></div></div>
+    <div id="deckIntro">Портфель — твои <b>8 боевых карт</b>. Перетащи карту из коллекции в слот. Тап по карте — характеристики и прокачка до <b>10 ур.</b> за кванты ⟠. Перед боем есть 10 секунд пересобрать портфель под соперника.</div>
+    <div id="deckOB" class="hidden"></div>
+    <div id="deckFrame">
+      <div id="deckLbl">⚔ БОЕВОЙ НАБОР · 8 КАРТ</div>
+      <div id="deckRow"></div>
+    </div>
+    <div id="collFrame">
+      <div id="collLbl">КОЛЛЕКЦИЯ · ТЯНИ КАРТУ В НАБОР · ТАП — ХАРАКТЕРИСТИКИ</div>
+      <div id="collGrid"></div>
+    </div>
+    <div id="deckReady">ГОТОВ · В БОЙ</div>
+  </div>
+
+  <!-- страница карты -->
+  <div id="cardWrap" class="hidden">
+    <div id="cardBox">
+      <div id="cbBand"></div>
+      <div id="cbWallet" style="font:800 10px var(--mono);color:var(--dim);letter-spacing:.5px;margin-top:9px"></div>
+      <div id="cbIco"></div><div id="cbName"></div><div id="cbLvl"></div>
+      <div id="cbDesc"></div>
+      <div id="cbStats"></div>
+      <div id="cbLock" class="hidden"></div>
+      <div id="cbUp"></div>
+      <div id="cbUpNote"></div>
+      <div id="cbClose">Закрыть</div>
+    </div>
+  </div>
+
+  <div id="sheetWrap" class="hidden">
+    <div id="sheet">
+      <div id="shQ"></div><div id="shSide"></div><div id="shPrice"></div>
+      <div id="amtRow">
+        <input type="range" id="amtSlider" min="5" max="100" step="5" value="25">
+        <input type="number" id="amtInput" min="5" step="5" value="25" inputmode="numeric">
+      </div>
+      <div id="shCalc"><span>Шеры: <b id="shShares">0</b></span><span>Выплата при исходе: <b id="shPayout">0 ⟠</b></span></div>
+      <div id="shConfirm">ИНВЕСТИРОВАТЬ</div><div id="shCancel">Отмена</div>
+    </div>
+  </div>
+
+  <div id="duelWrap" class="hidden">
+    <div id="duel">
+      <div id="duelIco">⚔</div>
+      <div id="duelTitle">Отстоять своё мнение?</div>
+      <div id="duelSub">Найден оппонент с противоположной позицией.<br>Победа <b style="color:var(--gold)">+40 ⟠</b>. Кванты достаются только победителю.</div>
+      <div id="duelFoe">ОППОНЕНТ: <span class="fn" id="duelFoeName"></span><br><span style="color:var(--muted)">его мнение: <span id="duelFoeSide"></span></span></div>
+      <div id="duelGo">В БОЙ · ЗАРАБОТАТЬ КВАНТЫ</div>
+      <div id="duelLater">Позже</div>
+    </div>
+  </div>
+
+  <!-- champion select -->
+  <div id="champWrap" class="hidden">
+    <div id="champBox">
+      <div id="champTitle">ВЫБЕРИ МАРКЕТМЕЙКЕРА</div>
+      <div id="champFoeInfo"></div>
+      <div id="champRow"></div>
+    </div>
+  </div>
+
+  <!-- ═══ BATTLE ═══ -->
+  <div class="scr hidden" id="scrBattle">
+    <div id="bTop">
+      <div id="barRow">
+        <div class="fighter" style="color:var(--foe)"><span class="fc" id="foeChampIco"></span><span id="foeLbl">ОППОНЕНТ</span></div>
+        <div><div id="timer">1:30</div><div id="phaseLbl">ОТКРЫТИЕ ТОРГОВ · ×1</div></div>
+        <div class="fighter" style="color:var(--me);text-align:right"><span id="meLbl">ТЫ</span><span class="fc" id="meChampIco" style="margin:0 0 0 3px"></span></div>
+      </div>
+      <div id="bQuestion"></div>
+    </div>
+    <div id="cwrap">
+      <canvas id="cv"></canvas>
+      <div id="stunOverlay"></div><div id="alert"></div><div id="hintTip"></div>
+    </div>
+    <div id="hud">
+      <div id="tutShade" class="hidden"></div>
+      <div id="apRow">
+        <div id="apNum">0<span> AP</span></div>
+        <div id="apBar"><div id="apFill"></div></div>
+        <div id="heatWrap"><div id="heatLbl">ИНЕРЦИЯ</div><div id="heatBar"><div id="heatFill"></div></div></div>
+        <div id="scanBtn">👁 СКАН<div class="cd"></div></div>
+      </div>
+      <div id="handRow">
+        <div class="bigcard" id="champBtn"><div class="cost" id="champCost"></div><div class="crown">👑</div><div class="ico" id="champIco"></div><div class="nm" id="champNm"></div><div class="mm">МАРКЕТМЕЙКЕР</div><div class="cd"></div></div>
+        <div class="bigcard" data-slot="0"></div>
+        <div class="bigcard" data-slot="1"></div>
+        <div class="bigcard" data-slot="2"></div>
+        <div class="bigcard" data-slot="3"></div>
+        <div id="nextCard"><div class="ni" id="nextIco"></div><div class="nl">ДАЛЕЕ</div></div>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="countdown"><div id="countNum">3</div></div>
+    <div id="tutText" class="hidden"></div>
+    <div class="overlay hidden" id="matchRes">
+      <div id="matchTitle"></div>
+      <div id="matchOko"></div>
+      <div id="matchSub" style="font:700 11px var(--mono);color:var(--muted);margin-top:6px;letter-spacing:1px"></div>
+      <div id="matchReward"></div>
+      <div id="matchXP" style="font:800 12px var(--mono);color:var(--me);margin-top:8px;letter-spacing:1px"></div>
+      <div id="unlockRow" class="hidden"></div>
+      <div class="cta" id="backBtn">К РЫНКУ →</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+/* ═════════════ META (рынок, кванты) ═════════════ */
+let quants=100, chips=5; // чипы 🔷 — твёрдая валюта (IAP), кванты ⟠ — фармятся
+const PLVL={xp:0,lvl:1};
+const xpNext=l=>50+(l-1)*40;
+const cardCap=()=>Math.min(10,PLVL.lvl+2); // потолок карт = уровень игрока + 2
+function addXP(n){
+  PLVL.xp+=n;let up=false;
+  while(PLVL.xp>=xpNext(PLVL.lvl)){PLVL.xp-=xpNext(PLVL.lvl);PLVL.lvl++;up=true;}
+  syncPlayerUI();return up;
+}
+function foeLvl(){return Math.min(10,Math.max(curDiff().lvl,PLVL.lvl-1));} // подбор соперника по уровню
+function syncPlayerUI(){
+  $('balNum').textContent=Math.floor(quants)+' ⟠';
+  $('chipsNum').textContent=chips+' 🔷';
+  $('plvlNum').textContent='УР. '+PLVL.lvl;
+  $('plvlFill').style.width=Math.min(100,PLVL.xp/xpNext(PLVL.lvl)*100)+'%';
+  if($('deckQ'))$('deckQ').innerHTML=Math.floor(quants)+' ⟠ · '+chips+' 🔷 · <span style="color:var(--me)">ур.'+PLVL.lvl+'</span>';
+  if($('cbWallet'))$('cbWallet').innerHTML='<span style="color:var(--gold)">'+Math.floor(quants)+' ⟠</span> · <span style="color:#5B9BFF">'+chips+' 🔷</span> · <span style="color:var(--me)">ИГРОК УР.'+PLVL.lvl+'</span>';
+}
+function animateQ(from,to){ // плавное списание квантов
+  const t0=performance.now(),dur=450;
+  (function f(ts){
+    const k=Math.min(1,(ts-t0)/dur);
+    quants=from+(to-from)*k;
+    syncPlayerUI();
+    if(k<1)requestAnimationFrame(f);else{quants=to;syncPlayerUI();}
+  })(t0);
+}
+const EVENTS=[
+  {id:'ai', q:'Лопнет ли пузырь ИИ до конца лета?',       poolY:6200,poolN:3800,resolved:null,dl:'31 АВГ'},
+  {id:'btc',q:'Биткоин выше $150K к 1 сентября?',         poolY:2900,poolN:7100,resolved:null,dl:'1 СЕН'},
+  {id:'fed',q:'ФРС снизит ставку на июльском заседании?', poolY:5100,poolN:4900,resolved:null,dl:'29 ИЮЛ'},
+];
+EVENTS.forEach(e=>{e.pos={yes:{sh:0,inv:0},no:{sh:0,inv:0}};e.duels={n:0,w:0};});
+const REPORT=[]; // отчёт игрока: резолвы событий с профитом и статой дуэлей
+const FOE_NAMES=['SHORT_KING','ГЭП_ХАНТЕР','TETHER_ENJOYER','МАРЖИН_КОЛЛ','DIAMOND_РУКИ','FUD_МАШИНА'];
+const priceY=e=>e.poolY/(e.poolY+e.poolN);
+const fmtQ=n=>Math.round(n)+' ⟠';
+const $=id=>document.getElementById(id);
+function syncBalance(){syncPlayerUI();}
+function renderMarket(){
+  const L=$('mktList');L.innerHTML='';
+  if(REPORT.length){
+    const r=document.createElement('div');r.className='ev';
+    r.innerHTML='<div class="evMeta" style="color:var(--gold)">📨 ОТЧЁТ · СОБЫТИЯ ЗАВЕРШЕНЫ</div>'+
+      REPORT.map(x=>`<div class="pos"><span>«${x.q}» → <b style="color:${x.res==='yes'?'var(--me)':'var(--foe)'}">${x.res==='yes'?'ДА':'НЕТ'}</b>${x.n?'<br>дуэли по событию: побед '+x.wr+'% из '+x.n:''}</span><span class="pv" style="color:${x.pay>=0?'var(--me)':'var(--foe)'}">${x.pay>=0?'+':''}${Math.round(x.pay)} ⟠</span></div>`).join('');
+    L.appendChild(r);
+  }
+  EVENTS.forEach(e=>{
+    const py=priceY(e),pn=1-py;
+    const card=document.createElement('div');card.className='ev';
+    let html=`<div class="evQ">${e.q}</div>
+      <div class="evMeta">ДЕДЛАЙН ${e.dl} · ПУЛ: ${fmtQ(e.poolY+e.poolN)}${e.duels.n?' · ДУЭЛИ: '+Math.round(e.duels.w/e.duels.n*100)+'% ИЗ '+e.duels.n:''}</div>
+      <div class="evBar"><div class="evBarY" style="width:${py*100}%"></div></div>`;
+    if(e.resolved){
+      html+=`<div class="resolved" style="background:rgba(${e.resolved==='yes'?'56,225,234':'255,59,78'},.12);color:${e.resolved==='yes'?'var(--me)':'var(--foe)'}">РЕЗОЛВ: ${e.resolved==='yes'?'ДА':'НЕТ'}</div>`;
+    }else{
+      html+=`<div class="evBtns">
+        <div class="evBtn y" data-e="${e.id}" data-s="yes">ДА · ${Math.round(py*100)}¢<small>купить шеры</small></div>
+        <div class="evBtn n" data-e="${e.id}" data-s="no">НЕТ · ${Math.round(pn*100)}¢<small>купить шеры</small></div>
+      </div>`;
+    }
+    ['yes','no'].forEach(s=>{
+      const p=e.pos[s];
+      if(p.sh>0){
+        const val=e.resolved?(e.resolved===s?p.sh:0):p.sh*(s==='yes'?py:pn);
+        html+=`<div class="pos"><span>ПОЗИЦИЯ ${s==='yes'?'ДА':'НЕТ'}: ${p.sh.toFixed(1)} шер (${fmtQ(p.inv)})</span><span class="pv">${e.resolved?(e.resolved===s?'выплата ':'сгорело '):'~'}${fmtQ(val)}</span></div>`;
+      }
+    });
+    if(!e.resolved)html+=`<div class="pos"><span style="color:var(--muted)">симуляция исхода для теста</span><span class="devBtn" data-dev="${e.id}">⚙ РЕЗОЛВ</span></div>`;
+    card.innerHTML=html;L.appendChild(card);
+  });
+  L.querySelectorAll('.evBtn').forEach(b=>b.addEventListener('pointerdown',()=>openSheet(b.dataset.e,b.dataset.s)));
+  L.querySelectorAll('.devBtn').forEach(b=>b.addEventListener('pointerdown',()=>devResolve(b.dataset.dev)));
+}
+function devResolve(id){
+  const e=EVENTS.find(x=>x.id===id);
+  e.resolved=Math.random()<priceY(e)?'yes':'no';
+  const p=e.pos[e.resolved];
+  const pay=(p.sh||0)-(e.pos.yes.inv+e.pos.no.inv); // профит: выплата минус вложенное
+  if(p.sh>0)quants+=p.sh;
+  REPORT.unshift({q:e.q,res:e.resolved,pay,n:e.duels.n,wr:e.duels.n?Math.round(e.duels.w/e.duels.n*100):0});
+  syncBalance();renderMarket();
+}
+const PACKS=[
+  {ico:'🐂',nm:'Набор Быка',ds:'«Аналитический отчёт» +50% HP, кулдаун волн −25%',pr:'50 🔷'},
+  {ico:'🐻',nm:'Набор Медведя',ds:'Второй слот опровержения, башни живут дольше',pr:'50 🔷'},
+  {ico:'🕵️',nm:'Инсайдер-пак',ds:'Скан 3.0с, кулдаун −50%, слив дешевле на 5 AP',pr:'75 🔷'},
+  {ico:'⚡',nm:'Маркет-мейкер',ds:'Стартовые +40 AP и −20% кулдаун чемпиона',pr:'100 🔷'},
+];
+const CHIP_PACKS=[
+  {ico:'🔷',nm:'Горсть чипов',ds:'50 🔷',pr:'199 ₽'},
+  {ico:'💠',nm:'Стек чипов',ds:'120 🔷 · выгода 20%',pr:'399 ₽'},
+  {ico:'🌀',nm:'Кейс чипов',ds:'350 🔷 · выгода 40%',pr:'999 ₽'},
+];
+function renderShop(){
+  const L=$('mktList2');L.innerHTML='';
+  const h1=document.createElement('div');
+  h1.innerHTML='<div class="evMeta" style="color:#5B9BFF">🔷 ЧИПЫ — ПРЕМИУМ-ВАЛЮТА · кванты фармятся в дуэлях, чипы покупаются</div>';
+  L.appendChild(h1);
+  CHIP_PACKS.forEach(p=>{
+    const d=document.createElement('div');d.className='pack';
+    d.innerHTML=`<div class="pic">${p.ico}</div><div><div class="nm">${p.nm}</div><div class="ds">${p.ds}</div></div><div class="buy">${p.pr}<small>СКОРО · TG STARS</small></div>`;
+    L.appendChild(d);
+  });
+  const h2=document.createElement('div');
+  h2.innerHTML='<div class="evMeta" style="margin-top:8px">НАБОРЫ ИНСТРУМЕНТОВ · ЗА ЧИПЫ</div>';
+  L.appendChild(h2);
+  PACKS.forEach(p=>{
+    const d=document.createElement('div');d.className='pack';
+    d.innerHTML=`<div class="pic">${p.ico}</div><div><div class="nm">${p.nm}</div><div class="ds">${p.ds}</div></div><div class="buy">${p.pr}<small>СКОРО</small></div>`;
+    L.appendChild(d);
+  });
+}
+function syncDeckTab(){
+  const t=document.querySelector('.tab[data-t="deck"]');
+  t.classList.toggle('lockT',!tutorialDone);
+  t.textContent=tutorialDone?'💼 ПОРТФЕЛЬ':'🔒 ПОРТФЕЛЬ';
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('pointerdown',()=>{
+  if(t.dataset.t==='deck'){
+    if(!tutorialDone){
+      t.textContent='🔒 ПОСЛЕ ОБУЧЕНИЯ';setTimeout(syncDeckTab,1300);return;
+    }
+    openDeck(false,null);return;
+  }
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
+  $('mktList').classList.toggle('hidden',t.dataset.t!=='mkt');
+  $('mktList2').classList.toggle('hidden',t.dataset.t!=='shop');
+}));
+
+let sheetEv=null,sheetSide=null,sheetAmt=25;
+function openSheet(id,side){
+  sheetEv=EVENTS.find(x=>x.id===id);sheetSide=side;
+  setAmt(25);
+  $('shQ').textContent=sheetEv.q;
+  $('shSide').textContent='МНЕНИЕ: '+(side==='yes'?'ДА':'НЕТ');
+  $('shSide').style.color=side==='yes'?'var(--me)':'var(--foe)';
+  calcSheet();$('sheetWrap').classList.remove('hidden');
+}
+function calcSheet(){
+  const py=priceY(sheetEv);
+  const p=sheetSide==='yes'?py:1-py;
+  $('shPrice').textContent='ЦЕНА ШЕРА: '+Math.round(p*100)+'¢ · вероятность рынка '+Math.round(p*100)+'%';
+  const sh=sheetAmt/p;
+  $('shShares').textContent=sh.toFixed(1);
+  $('shPayout').textContent=fmtQ(sh);
+}
+function setAmt(v){
+  const max=Math.max(5,Math.floor(quants));
+  sheetAmt=Math.min(max,Math.max(5,Math.round(v/5)*5||5));
+  $('amtSlider').max=max;$('amtSlider').value=sheetAmt;
+  $('amtInput').value=sheetAmt;
+  calcSheet();
+}
+$('amtSlider').addEventListener('input',()=>setAmt(+$('amtSlider').value));
+$('amtInput').addEventListener('input',()=>{const v=+$('amtInput').value;if(v>=5)setAmt(v);});
+$('amtInput').addEventListener('blur',()=>setAmt(+$('amtInput').value));
+$('shCancel').addEventListener('pointerdown',()=>$('sheetWrap').classList.add('hidden'));
+$('shConfirm').addEventListener('pointerdown',()=>{
+  if(quants<sheetAmt){$('shConfirm').textContent='НЕ ХВАТАЕТ КВАНТОВ';setTimeout(()=>$('shConfirm').textContent='ИНВЕСТИРОВАТЬ',1000);return;}
+  const py=priceY(sheetEv);
+  const p=sheetSide==='yes'?py:1-py;
+  quants-=sheetAmt;
+  sheetEv.pos[sheetSide].sh+=sheetAmt/p;sheetEv.pos[sheetSide].inv+=sheetAmt;
+  if(sheetSide==='yes')sheetEv.poolY+=sheetAmt;else sheetEv.poolN+=sheetAmt;
+  syncBalance();renderMarket();
+  $('sheetWrap').classList.add('hidden');
+  openDuel();
+});
+/* ── конструктор колоды ── */
+let deckSel=-1,deckIv=null,deckOnReady=null;
+function cardMini(key,opts){
+  const d=CARD_DB[key],m=META[key];
+  const cls='mini '+(d.t==='unit'?'tUnit':d.t==='spell'?'tSpell':'tTower')
+    +(opts.sel?' sel':'')+(opts.inDeck?' inDeck':'')+(opts.lock?' lock':'');
+  let inner=`<div class="cost">${d.cost}</div><div class="lv">ур.${m.level}</div><div class="ico">${d.ico}</div><div class="band">${TYPE_BAND[d.t]}</div>`;
+  if(opts.lock)inner+=`<div class="how">🔒 ${m.how||''}</div>`;
+  if(opts.upA)inner+=`<div class="upA">⬆</div>`; // можно прокачать: стрелка под уровнем
+  return `<div class="${cls}" data-k="${key}" data-where="${opts.where}">${inner}</div>`;
+}
+function renderDeckUI(){
+  $('deckRow').innerHTML=playerDeck.map((k,i)=>k?cardMini(k,{where:'deck'}).replace('data-k','data-i="'+i+'" data-k'):'<div class="mini empty" data-i="'+i+'">+</div>').join('');
+  const keys=Object.keys(META);
+  $('collGrid').innerHTML=keys.map(k=>cardMini(k,{where:'coll',lock:!META[k].unlocked,inDeck:playerDeck.includes(k),
+    upA:META[k].unlocked&&META[k].level<Math.min(10,cardCap())&&quants>=upCost(META[k].level)})).join('');
+  // слот портфеля: тап = страница карты
+  $('deckRow').querySelectorAll('.mini').forEach(el=>el.addEventListener('pointerdown',()=>{
+    const k=playerDeck[+el.dataset.i];if(k)openCard(k);
+  }));
+  if(deckOB){ // онбординг: подсвечиваем карту-источник и пустой слот
+    const src=$('collGrid').querySelector('.mini[data-k="halt"]');
+    if(src)src.classList.add('obHi');
+    const ei=playerDeck.indexOf(null);
+    const tgt=$('deckRow').children[ei>=0?ei:playerDeck.length-1];
+    if(tgt)tgt.classList.add('dropHi');
+  }
+  // коллекция: драг в слот = замена, тап = страница карты
+  $('collGrid').querySelectorAll('.mini').forEach(el=>{
+    el.addEventListener('pointerdown',e=>{
+      try{el.setPointerCapture(e.pointerId);}catch(_){}
+      collDrag={key:el.dataset.k,x0:e.clientX,y0:e.clientY,active:false,src:el};
+    });
+  });
+}
+/* ── драг из коллекции в портфель ── */
+let collDrag=null;
+function slotAt(x,y){
+  let hit=-1;
+  $('deckRow').querySelectorAll('.mini').forEach((el,i)=>{
+    const r=el.getBoundingClientRect();
+    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)hit=i;
+  });
+  return hit;
+}
+window.addEventListener('pointermove',e=>{
+  if(!collDrag)return;
+  if(!collDrag.active){
+    if(Math.hypot(e.clientX-collDrag.x0,e.clientY-collDrag.y0)<=15)return;
+    if(!META[collDrag.key].unlocked){collDrag=null;return;} // закрытые не тащим
+    collDrag.active=true;
+    const g=document.createElement('div');g.id='dragGhost';
+    g.innerHTML=cardMini(collDrag.key,{where:'ghost'});
+    document.body.appendChild(g);collDrag.ghost=g;
+  }
+  collDrag.ghost.style.left=e.clientX+'px';collDrag.ghost.style.top=e.clientY+'px';
+  const hit=slotAt(e.clientX,e.clientY);
+  $('deckRow').querySelectorAll('.mini').forEach((el,i)=>el.classList.toggle('dropHi',i===hit));
+},{passive:true});
+window.addEventListener('pointerup',e=>{
+  const cd=collDrag;collDrag=null;
+  if(!cd)return;
+  if(!cd.active){if(!deckOB)openCard(cd.key);return;} // короткий тап — страница карты (в онбординге ждём жест)
+  if(cd.ghost)cd.ghost.remove();
+  $('deckRow').querySelectorAll('.dropHi').forEach(el=>el.classList.remove('dropHi'));
+  const idx=slotAt(e.clientX,e.clientY);
+  if(idx<0)return;
+  const k=cd.key,j=playerDeck.indexOf(k);
+  if(j===idx)return;
+  if(j>=0)playerDeck[j]=playerDeck[idx]; // карта уже в портфеле — меняем местами
+  playerDeck[idx]=k;
+  renderDeckUI();
+  if(deckOB)finishDeckOB();
+});
+window.addEventListener('pointercancel',()=>{
+  if(collDrag&&collDrag.ghost)collDrag.ghost.remove();
+  collDrag=null;
+  document.querySelectorAll('.dropHi').forEach(el=>el.classList.remove('dropHi'));
+});
+/* ── страница карты: описание, характеристики, прокачка ── */
+function statRows(key){
+  const d=CARD_DB[key],lv=META[key].level,rows=[['СТОИМОСТЬ',d.cost+' AP']];
+  if(d.t==='unit'){
+    rows.push(['БОЙЦОВ В ВОЛНЕ',d.count],['HP',Math.round(d.hp*lvlMult(lv))],
+      ['СКОРОСТЬ',d.spd],['ВЛИЯНИЕ НА ОКО','+'+(d.shift*lvlMult(lv,0.04)*100).toFixed(1)+'%'+(d.stealth?' · 🕶':'')]);
+  }else if(key==='paywall'){rows.push(['ПРОЧНОСТЬ',Math.round(d.hp*lvlMult(lv))]);}
+  else if(key==='lawsuit'){rows.push(['ЗАМЕДЛЕНИЕ','45%'],['РАДИУС',d.range],['ВРЕМЯ ЖИЗНИ',d.life+'с']);}
+  else if(d.t==='tower'){rows.push(['УРОН',+(d.dmg*lvlMult(lv)).toFixed(1)],['ТЕМП','выстрел / '+d.rate+'с'],['РАДИУС',d.range],['ВРЕМЯ ЖИЗНИ',d.life+'с']);}
+  else if(key==='halt'){rows.push(['ЗОНА',d.radius],['СТОП','3с']);}
+  else if(key==='lever'){rows.push(['ЭФФЕКТ','+40 AP'],['ШТРАФ','прирост ×0.5 · 5с']);}
+  else if(key==='ddos'){rows.push(['ЗОНА',d.radius],['ОТКЛЮЧЕНИЕ','4с']);}
+  return rows;
+}
+let cardKey=null;
+function openCard(key){
+  cardKey=key;
+  const d=CARD_DB[key],m=META[key];
+  const tc=d.t==='unit'?'var(--me)':d.t==='spell'?'var(--pink)':'var(--gold)';
+  $('cbBand').textContent=TYPE_BAND[d.t];$('cbBand').style.background=tc;
+  $('cbIco').textContent=d.ico;$('cbName').textContent=d.nm;
+  $('cbLvl').textContent='УРОВЕНЬ '+m.level+' / 10';
+  $('cbDesc').textContent=CARD_DESC[key]||d.fn;
+  $('cbStats').innerHTML=statRows(key).map(r=>`<div class="cbRow"><span class="l">${r[0]}</span><span class="v">${r[1]}</span></div>`).join('');
+  const lockEl=$('cbLock'),up=$('cbUp'),note=$('cbUpNote');
+  if(!m.unlocked){
+    lockEl.textContent='🔒 '+(m.how||'');lockEl.classList.remove('hidden');
+    up.classList.add('off');up.textContent='ЗАКРЫТА';note.textContent='';
+  }else{
+    lockEl.classList.add('hidden');
+    if(m.level>=10){up.classList.add('off');up.textContent='МАКСИМАЛЬНЫЙ УРОВЕНЬ';note.textContent='';}
+    else if(m.level>=cardCap()){ // потолок по уровню игрока — контроль баланса
+      up.classList.add('off');up.textContent='⬆ ПРОКАЧАТЬ ДО УР.'+(m.level+1);
+      note.textContent='🔒 НУЖЕН УРОВЕНЬ ИГРОКА '+(m.level-1)+' · СЕЙЧАС УР.'+PLVL.lvl;
+    }
+    else{
+      const c=upCost(m.level);
+      up.textContent='⬆ ПРОКАЧАТЬ ДО УР.'+(m.level+1)+' · '+c+' ⟠';
+      up.classList.toggle('off',quants<c);
+      note.textContent=quants<c?'НЕ ХВАТАЕТ КВАНТОВ · У ТЕБЯ '+Math.floor(quants)+' ⟠':'HP И УРОН +8% · ВЛИЯНИЕ +4%';
+    }
+  }
+  syncPlayerUI();
+  $('cardWrap').classList.remove('hidden');
+}
+$('cbUp').addEventListener('pointerdown',e=>{
+  const m=META[cardKey];if(!m||!m.unlocked||m.level>=10||m.level>=cardCap())return;
+  const c=upCost(m.level);if(quants<c)return;
+  const from=quants;m.level++;
+  openCard(cardKey);renderDeckUI();
+  // минималистичная анимация аппа: пульс уровня, вспышка статов, улетающее списание, плавный счётчик
+  $('cbLvl').classList.remove('pop');void $('cbLvl').offsetWidth;$('cbLvl').classList.add('pop');
+  $('cbStats').classList.remove('flash');void $('cbStats').offsetWidth;$('cbStats').classList.add('flash');
+  const fly=document.createElement('div');fly.className='qfly';fly.textContent='−'+c+' ⟠';
+  fly.style.left='50%';fly.style.top=($('cbUp').offsetTop-6)+'px';fly.style.transform='translateX(-50%)';
+  $('cardBox').appendChild(fly);setTimeout(()=>fly.remove(),850);
+  animateQ(from,from-c);
+});
+$('cbClose').addEventListener('pointerdown',()=>$('cardWrap').classList.add('hidden'));
+$('cardWrap').addEventListener('pointerdown',e=>{if(e.target.id==='cardWrap')$('cardWrap').classList.add('hidden');});
+let deckOB=false,deckOBPrematch=false,obRaf=null;
+function startDeckTimer(){
+  let left=10;$('deckTimer').textContent='0:'+String(left).padStart(2,'0');
+  deckIv=setInterval(()=>{left--;
+    $('deckTimer').textContent='0:'+String(Math.max(0,left)).padStart(2,'0');
+    if(left<=0)deckReady();
+  },1000);
+}
+function openDeck(prematch,onReady){
+  deckOnReady=onReady||null;
+  $('deckOpp').textContent=prematch?('VS '+$('duelFoeName').textContent+' · '+curDiff().lbl):'';
+  $('deckIntro').style.display=SEEN.deckIntro?'none':'block';SEEN.deckIntro=1;
+  renderDeckUI();syncPlayerUI();
+  $('deckWrap').classList.remove('hidden');
+  clearInterval(deckIv);
+  $('deckReady').textContent=prematch?'ГОТОВ · В БОЙ':'ГОТОВО';
+  if(!SEEN.deckOB){ // первый вход: онбординг драга, таймер и ГОТОВ ждут
+    SEEN.deckOB=1;deckOB=true;deckOBPrematch=prematch;
+    $('deckOB').innerHTML='🧊 <b>Заморозка</b> открыта! В наборе есть свободный слот.<br><b>Перетащи её</b> из коллекции в пустую ячейку';
+    $('deckOB').classList.remove('hidden');
+    $('deckReady').classList.add('off');
+    $('deckTimer').textContent=prematch?'⏸':'';
+    renderDeckUI();obHandStart();
+    return;
+  }
+  if(prematch)startDeckTimer();else $('deckTimer').textContent='';
+}
+/* перчатка-демонстратор жеста (DOM) */
+function obHandStart(){
+  let hand=document.getElementById('obHand');
+  if(!hand){
+    hand=document.createElement('div');hand.id='obHand';
+    hand.innerHTML='<svg viewBox="0 0 46 52"><ellipse cx="14" cy="18" rx="8" ry="16" fill="#F5F5F2" transform="rotate(-18 14 18)"/><ellipse cx="26" cy="34" rx="16" ry="13" fill="#F5F5F2" transform="rotate(-14 26 34)"/><ellipse cx="38" cy="44" rx="8" ry="10" fill="#D9DCE2" transform="rotate(-28 38 44)"/></svg>';
+    document.body.appendChild(hand);
+  }
+  const CYCLE=1.9;let t0=performance.now();
+  function frame(ts){
+    if(!deckOB){hand.remove();obRaf=null;return;}
+    obRaf=requestAnimationFrame(frame);
+    const src=document.querySelector('#collGrid .mini[data-k="halt"]');
+    const ei=playerDeck.indexOf(null);
+    const dst=$('deckRow').children[ei>=0?ei:1];
+    if(!src||!dst)return;
+    const sr=src.getBoundingClientRect(),dr=dst.getBoundingClientRect();
+    const sx=sr.left+sr.width/2,sy=sr.top+sr.height/2;
+    const tx=dr.left+dr.width/2,ty=dr.top+dr.height/2;
+    const ph=((ts-t0)/1000%CYCLE)/CYCLE;
+    let x,y,sc=1;
+    if(ph<0.6){const k=ph/0.6,e=k*k*(3-2*k);
+      const cx=(sx+tx)/2+50,cy=(sy+ty)/2;
+      x=(1-e)*(1-e)*sx+2*(1-e)*e*cx+e*e*tx;
+      y=(1-e)*(1-e)*sy+2*(1-e)*e*cy+e*e*ty;
+    }else{x=tx;y=ty;sc=1-Math.sin((ph-0.6)/0.4*Math.PI)*0.16;}
+    hand.style.left=(x-10)+'px';hand.style.top=(y-4)+'px';
+    hand.style.transform='scale('+sc+')';
+  }
+  obRaf=requestAnimationFrame(frame);
+}
+function finishDeckOB(){
+  deckOB=false;
+  $('deckOB').classList.add('hidden');
+  $('deckReady').classList.remove('off');
+  document.querySelectorAll('.obHi').forEach(el=>el.classList.remove('obHi'));
+  $('deckRow').children[1]&&$('deckRow').children[1].classList.remove('dropHi');
+  ghint('deckOBdone','Жест освоен! Так собирают портфель под соперника');
+  if(deckOBPrematch)startDeckTimer();
+}
+function deckReady(){
+  clearInterval(deckIv);deckIv=null;
+  $('deckWrap').classList.add('hidden');
+  if(deckOnReady){const f=deckOnReady;deckOnReady=null;f();}
+}
+$('deckReady').addEventListener('pointerdown',deckReady);
+
+/* ── анлок карты: витрина на экране результата ── */
+function unlockCard(key,extraHtml){
+  META[key].unlocked=true;
+  const d=CARD_DB[key];
+  const TICO={unit:'⚔️',tower:'🛡️',wall:'🛡️',spell:'⚡️'};
+  $('unlockRow').innerHTML=`<div class="ut">НОВАЯ КАРТА ОТКРЫТА</div>
+    <div class="un">${TICO[d.t]} ${d.nm} ${d.ico}</div>
+    <div class="ud">${d.fn}</div>${extraHtml||''}`;
+  $('unlockRow').classList.remove('hidden');
+}
+
+let duelEv=null,duelMySide=null;
+function openDuel(){
+  duelEv=sheetEv;duelMySide=sheetSide;
+  const D=curDiff();
+  $('duelFoeName').textContent=D.nm+'_'+FOE_NAMES[Math.floor(Math.random()*FOE_NAMES.length)];
+  $('duelFoeSide').textContent=(duelMySide==='yes'?'НЕТ':'ДА')+' · '+D.lbl+' · ур.'+foeLvl();
+  $('duelWrap').classList.remove('hidden');
+}
+$('duelLater').addEventListener('pointerdown',()=>$('duelWrap').classList.add('hidden'));
+$('duelGo').addEventListener('pointerdown',()=>{
+  $('duelWrap').classList.add('hidden');
+  if(!tutorialDone){tutReset();myChamp=null;foeChamp=null;enterBattle();return;}
+  const start=()=>{
+    if(liveMatches<CHAMP_UNLOCK_AT){myChamp=null;foeChamp=null;enterBattle();}
+    else openChampSelect();
+  };
+  openDeck(true,start); // 10 секунд на пересборку колоды под соперника
+});
+
+/* ═════════════ КАРТЫ / КОЛОДА ═════════════ */
+const CARD_DB={
+  fomo:   {t:'unit', ico:'🌀', nm:'FOMO-СПАМ',    fn:'ТОЛПА · БЫСТРЫЕ',  cost:25, count:4, hp:1,  spd:88, shift:.05, r:4},
+  report: {t:'unit', ico:'🐋', nm:'АНАЛИТ. ОТЧЁТ',fn:'ТАНК · МОЩНЫЙ',    cost:45, count:1, hp:14, spd:40, shift:.30, r:10},
+  leak:   {t:'unit', ico:'🕵️', nm:'ИНСАЙД. СЛИВ', fn:'НЕВИДИМКА',        cost:35, count:1, hp:5,  spd:62, shift:.18, r:6, stealth:true},
+  sniper: {t:'tower',ico:'⌖',  nm:'ОПРОВЕРЖЕНИЕ', fn:'БЬЁТ СИЛЬНЫХ',     cost:40, dmg:6, rate:1.6, range:125, life:22},
+  ban:    {t:'tower',ico:'🔨', nm:'БАН-ХАММЕР',   fn:'БЬЁТ ТОЛПУ',       cost:40, dmg:1, rate:0.8, range:88, splash:60, life:22},
+  paywall:{t:'wall', ico:'🧱', nm:'PAYWALL',       fn:'СТЕНА-ПРЕГРАДА',   cost:30, hp:24},
+  halt:   {t:'spell',ico:'🧊', nm:'ЗАМОРОЗКА',    fn:'СТОП-ЗОНА 3С',     cost:30, radius:90, dur:3, target:'point'},
+  lever:  {t:'spell',ico:'📈', nm:'КРЕД. ПЛЕЧО',  fn:'+40 ЭНЕРГИИ',      cost:20, target:'none'},
+  ddos:   {t:'spell',ico:'💻', nm:'DDOS-АТАКА',   fn:'ГЛУШИТ ЗАЩИТУ',    cost:35, radius:100, dur:4, target:'point'},
+};
+const CHAMPS={
+  musk: {ico:'🚀', nm:'ВИЗИОНЕР',  desc:'Кликбейт-твит: твои юниты ×1.7 скорости на 3с', cost:30, cd:15},
+  fed:  {ico:'🏛', nm:'РЕГУЛЯТОР', desc:'Ставка: AP оппонента заморожен на 5с, штраф −Око', cost:35, cd:18},
+  whale:{ico:'🐳', nm:'ХЕДЖ-ФОНД', desc:'Жертвует твою башню — превращает её в голема 20HP', cost:40, cd:20},
+};
+/* новые карты: средняя атака и замедляющая защита */
+CARD_DB.meme   ={t:'unit', ico:'🔥', nm:'ВИРУСНЫЙ МЕМ', fn:'ДВОЕ · ЖИВУЧИЕ',   cost:30, count:2, hp:4, spd:70, shift:.10, r:5};
+CARD_DB.lawsuit={t:'tower',ico:'⚖️', nm:'СУДЕБНЫЙ ИСК', fn:'ЗАМЕДЛЯЕТ ВОЛНЫ',  cost:35, dmg:0, rate:999, range:110, life:18, slow:.55};
+
+/* развёрнутые описания для страницы карты */
+const CARD_DESC={
+  fomo:'Стая из четырёх быстрых слухов. Дешёвая разведка и добивание — сгорает от факт-чека.',
+  report:'Медленный тяжёлый аргумент с большим запасом прочности. Главный двигатель Ока.',
+  leak:'Невидимка: официальное опровержение его не видит. Сбивается только бан-хаммером.',
+  meme:'Двое живучих: переживают AoE-факт-чек, где толпа сгорает. Уязвимы для снайпера.',
+  sniper:'Редкие мощные выстрелы по самой жирной цели. Контрит китов и големов, толпу пропускает.',
+  ban:'Быстрый урон по площади. Выжигает стаи спама, против тяжей почти бесполезен.',
+  paywall:'Стена: не бьёт, но задерживает волну, пока башни её добивают. Разрушается и тает.',
+  lawsuit:'Замедляет все вражеские волны в радиусе на 45%. Урона нет — силён только в связке.',
+  halt:'Мгновенно останавливает всех юнитов в зоне на 3 секунды. Окно для контратаки.',
+  lever:'Мгновенно +40 AP, но прирост урезан вдвое на 5 секунд. Разгон перед большой волной.',
+  ddos:'Отключает вражеский факт-чекинг в радиусе на 4 секунды.',
+};
+/* ── коллекция: анлоки и уровни (1..10) ── */
+const META={
+  fomo:   {unlocked:true, level:1},
+  report: {unlocked:true, level:1},
+  leak:   {unlocked:true, level:1},
+  sniper: {unlocked:true, level:1},
+  ban:    {unlocked:true, level:1},
+  paywall:{unlocked:true, level:1},
+  lever:  {unlocked:true, level:1},
+  halt:   {unlocked:false,level:1, how:'Пройди обучение'},
+  meme:   {unlocked:false,level:1, how:'Победа в 1-й живой битве'},
+  lawsuit:{unlocked:false,level:1, how:'Победа во 2-й живой битве'},
+  ddos:   {unlocked:false,level:1, how:'Скоро — сезонная награда'},
+};
+const lvlMult=(lvl,k)=>1+(k===undefined?0.08:k)*((lvl||1)-1);
+const upCost=lvl=>15*lvl;
+let playerDeck=['fomo','report','leak','sniper','ban','paywall','lever',null]; // 8-й слот пуст до онбординга
+const FOE_DECK =['fomo','report','leak','sniper','ban','paywall','halt','ddos'];
+
+/* ── сложность бота: первый бой почти гарантированная победа, дальше рост ── */
+const DIFFS=[
+  {nm:'ХОМЯК',   lbl:'НОВИЧОК',  tick:1.9, apMult:0.55, skip:.35, mode:'basic',  champP:0,   lvl:1},
+  {nm:'СКАЛЬПЕР',lbl:'ЛЮБИТЕЛЬ', tick:1.4, apMult:0.7,  skip:.2,  mode:'basic2', champP:0,   lvl:1},
+  {nm:'ТРЕЙДЕР', lbl:'ОПЫТНЫЙ',  tick:1.2, apMult:0.85, skip:.12, mode:'smart',  champP:.15, lvl:2, deck:['fomo','report','leak','sniper','ban','paywall','halt','meme']},
+  {nm:'АКУЛА',   lbl:'ПРО',      tick:0.8, apMult:1.0,  skip:0,   mode:'smart',  champP:.3,  lvl:3, deck:['fomo','report','meme','sniper','ban','lawsuit','halt','ddos']},
+];
+let duelWins=0;
+// плавная лестница: 1-й живой матч ХОМЯК, 2-й СКАЛЬПЕР, 3-4-й ТРЕЙДЕР, дальше АКУЛА
+const curDiff=()=>DIFFS[liveMatches<=0?0:liveMatches===1?1:liveMatches<4?2:3];
+
+/* ── онбординг и разблокировка маркетмейкеров ── */
+let tutorialDone=false, liveMatches=0;
+const CHAMP_UNLOCK_AT=3;
+const TUT={on:false,step:0,allow:null,spawned1:false,p1:false,p2:false,wave:false,p3:false};
+function tutReset(){TUT.on=true;TUT.step=1;TUT.allow=null;TUT.spawned1=TUT.p1=TUT.p2=TUT.p3s=TUT.hidTower=TUT.wave=TUT.p3=false;}
+function slotOf(key){return S.hand.indexOf(key);}
+function ensureInHand(key){ // карта урока обязана быть в руке — иначе софтлок
+  if(S.hand.includes(key))return;
+  const qi=S.queue.indexOf(key);
+  if(qi<0)return;
+  const protect=['ban','report','fomo']; // карты будущих уроков не выбрасываем
+  let slot=S.hand.findIndex(k=>!protect.includes(k));
+  if(slot<0)slot=0;
+  const swapped=S.hand[slot];
+  S.hand[slot]=key;S.queue[qi]=swapped;
+  renderHand();
+}
+function tutPause(allowKey,html,hiSlot,hiScan){
+  if(allowKey&&allowKey!=='scan'&&allowKey!=='tap'){ensureInHand(allowKey);hiSlot=slotOf(allowKey);}
+  S.paused=true;TUT.allow=allowKey;
+  document.getElementById('tutShade').classList.remove('hidden');
+  const tt=document.getElementById('tutText');tt.innerHTML=html;tt.classList.remove('hidden');
+  document.querySelectorAll('#handRow .bigcard[data-slot]').forEach(el=>{
+    el.classList.toggle('tutHi',+el.dataset.slot===hiSlot);
+  });
+  document.getElementById('scanBtn').classList.toggle('tutHi',!!hiScan);
+}
+function tutResume(){
+  S.paused=false;TUT.allow='free';
+  document.getElementById('tutShade').classList.add('hidden');
+  document.getElementById('tutText').classList.add('hidden');
+  document.querySelectorAll('.tutHi').forEach(el=>el.classList.remove('tutHi'));
+}
+function tutScript(){
+  if(TUT.step===1){ // защита
+    if(!TUT.spawned1&&S.t>=0.5){
+      TUT.spawned1=true;spawnUnits('foe','fomo',1);
+      S.units.filter(u=>u.side==='foe').forEach(u=>u.spd*=0.62); // медленнее для читаемости
+    }
+    if(S.t>=3&&!TUT.p1){TUT.p1=true;
+      tutPause('ban','Паника! Перетащи <b>🔨 фильтр</b> на мишень — сбей волну',slotOf('ban'));}
+  }else if(TUT.step===2){ // демонстрация Ока: тренер прорывается
+    if(!TUT.demoSpawned&&S.t>=8){
+      TUT.demoSpawned=true;
+      S.units.push({side:'foe',key:'fomo',lane:0,x:laneX(0),y:14,hp:1,maxHp:1,spd:88,dir:1,r:4,stealth:false,shift:CARD_DB.fomo.shift,frozenUntil:0,blocked:false,tutDemo:true});
+      addFloat(laneX(0),40,'СЛУХ ПРОСОЧИЛСЯ','255,59,78');
+    }
+    if(TUT.demoSpawned&&!S.units.some(u=>u.tutDemo)&&!TUT.pOko){TUT.pOko=true;
+      tutPause('tap','Слух дошёл до твоей границы — <b>линия горит красным</b> 📉.<br>Голубая линия — давишь ты, красная — давят тебя.<br>Серия атак делает её толще. Чей цвет на закрытии — тот победил. <b>Тапни</b>, чтобы продолжить');}
+  }else if(TUT.step===3){ // атака
+    if(S.t>=15&&!TUT.p2){TUT.p2=true;S.ap.me=Math.max(S.ap.me,50);
+      tutPause('report','Ответь! Перетащи <b>🐋 кита</b> — его прорыв перекрасит линию в голубой 📈',slotOf('report'));}
+  }else if(TUT.step===4){ // скан
+    if(!TUT.hidTower&&S.t>=20){TUT.hidTower=true;placeTower('foe','sniper',W-36,H*0.22);}
+    if(S.t>=24&&!TUT.p3s){TUT.p3s=true;S.ap.me=Math.max(S.ap.me,20);
+      tutPause('scan','Серый «?» наверху — скрытая защита. Жми <b>👁 СКАН</b>',-1,true);}
+  }else if(TUT.step===5){ // финальная атака — только после того, как кит дошёл (или страховка по времени)
+    const ready = TUT.reportDone ? S.t>=TUT.reportAt+1.3 : S.t>=34;
+    if(ready&&!TUT.p3){TUT.p3=true;S.ap.me=Math.max(S.ap.me,30);
+      tutPause('fomo','Кит дошёл — линия голубая! Закрепи тренд: перетащи <b>🌀 толпу</b> и забери рынок',slotOf('fomo'));}
+  }
+}
+
+
+/* ═════════════ BATTLER v0.8 ═════════════ */
+const MATCH_T=60, OT_T=20, LANES=3, MAX_AP=100, TOWER_CAP=4;
+const PHASES=[
+  {until:20,mult:1,lbl:'АДАПТАЦИЯ · ×1'},
+  {until:40,mult:2,lbl:'РАЗГОН · ×2'},
+  {until:60,mult:3,lbl:'РАЗВЯЗКА · ×3'},
+];
+const AP_BASE=10; // AP/сек в фазе ×1
+const SCAN_COST=15,SCAN_CD=8,SCAN_DUR=1.5;
+const HEAT_LIMIT=4,HEAT_DECAY=.9,STUN_T=2.0;
+const REWARD_WIN=40,REWARD_LOSE=0;
+const UNIT_WALL_DPS={fomo:1.5,report:4,leak:2.5,golem:6};
+
+let S=null,battleCtx=null,myChamp=null,foeChamp=null;
+function freshMatch(){
+  return {running:false,paused:false,timeScale:1,t:0,phase:0,overtime:false,otT:0,
+    ap:{me:20,foe:20},apSlow:{me:0,foe:0},apFrozen:{me:0,foe:0},
+    hand:[],queue:[],foeHand:[],foeQueue:[],
+    champCd:{me:0,foe:0},boostUntil:{me:0,foe:0},
+    units:[],towers:[],shots:[],floats:[],zones:[],pulses:[],
+    line:[],lineT:0,streak:{side:null,hits:0},
+    oko:0,selected:-1,champSel:false,
+    scanUntil:0,scanCd:0,stunUntil:0,heat:0,
+    aiTick:0,hints:{}};
+}
+const cv=$('cv'),ctx=cv.getContext('2d');
+let W=0,H=0;
+function resize(){
+  const d=Math.min(2,window.devicePixelRatio||1);
+  const r=cv.parentElement.getBoundingClientRect();
+  W=r.width;H=r.height;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0);
+}
+window.addEventListener('resize',resize);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const laneX=l=>W*(l+0.5)/LANES;
+const shuffle=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
+
+function flashAlert(txt,color='#FF3B4E',ms=1500,glitch=false){
+  const a=$('alert');a.textContent=txt;a.style.color=color;
+  a.style.textShadow=`0 0 18px ${color}88`;
+  a.classList.toggle('glitch',glitch);a.classList.add('show');
+  clearTimeout(a._t);a._t=setTimeout(()=>a.classList.remove('show','glitch'),ms);
+}
+function hint(key,txt,ms=3400){
+  if(S.hints[key])return;S.hints[key]=1;
+  const h=$('hintTip');h.textContent=txt;h.classList.add('show');
+  clearTimeout(h._t);h._t=setTimeout(()=>h.classList.remove('show'),ms);
+}
+function addFloat(x,y,txt,color){S.floats.push({x,y,txt,color,life:1.4});}
+
+/* ── spawn / place ── */
+function spawnUnits(side,key,lane){
+  const d=CARD_DB[key];
+  const lvl=side==='me'?META[key].level:foeLvl();
+  const hp=Math.round(d.hp*lvlMult(lvl));
+  const shiftLvl=d.shift*lvlMult(lvl,0.04);
+  const dir=side==='me'?-1:1;
+  const y0=side==='me'?H-14:14;
+  for(let i=0;i<d.count;i++){
+    S.units.push({side,key,lane,lvl,shiftLvl,
+      x:laneX(lane)+(d.count>1?(i-(d.count-1)/2)*13:0)+(Math.random()*8-4),
+      y:y0-dir*i*10,
+      hp,maxHp:hp,spd:d.spd*(0.92+Math.random()*.16),dir,r:d.r,
+      stealth:!!d.stealth,shift:d.shift,frozenUntil:0,blocked:false});
+  }
+  addFloat(laneX(lane),side==='me'?H-40:40,d.nm,side==='me'?'56,225,234':'255,59,78');
+}
+function spawnGolem(side,x,y){
+  const dir=side==='me'?-1:1;
+  S.units.push({side,key:'golem',lane:clamp(Math.floor(x/W*LANES),0,LANES-1),
+    x,y,hp:20,maxHp:20,spd:34,dir,r:12,stealth:false,shift:.4,frozenUntil:0,blocked:false});
+  addFloat(x,y-20,'ГОЛЕМ КАПИТАЛА',side==='me'?'56,225,234':'255,59,78');
+}
+const SEEN={}; // подсказки один раз за сессию
+function ghint(key,txt,ms=4200){
+  if(SEEN[key])return;SEEN[key]=1;
+  const h=document.getElementById('hintTip');h.textContent=txt;h.classList.add('show');
+  clearTimeout(h._t);h._t=setTimeout(()=>h.classList.remove('show'),ms);
+}
+function placeTower(side,key,x,y){
+  const d=CARD_DB[key];
+  const lvl=side==='me'?META[key].level:foeLvl();
+  const tw={side,key,x,y,cd:.3,disabledUntil:0,lvl};
+  if(key==='paywall'){tw.hp=Math.round(d.hp*lvlMult(lvl));tw.maxHp=tw.hp;}
+  else tw.dieAt=S.t+d.life;
+  S.towers.push(tw);
+  if(side==='me'){
+    addFloat(x,y-18,d.nm,'240,190,60');
+    if(key==='ban')ghint('tw_ban','🔨 Эта башня выжигает ТОЛПУ — стаи 🌀 спама. Против 🐋 кита почти бесполезна');
+    if(key==='sniper')ghint('tw_sniper','⌖ Эта башня валит КРУПНЫХ — 🐋 кита, голема. Толпу 🌀 не успевает отстреливать');
+    if(key==='paywall')ghint('tw_wall','🧱 Стена не бьёт — она задерживает волну, пока твои башни её добивают');
+  }
+}
+const towersOf=s=>S.towers.filter(t=>t.side===s);
+
+/* ── spells ── */
+function castSpell(side,key,x,y){
+  const d=CARD_DB[key];
+  if(key==='halt'){
+    S.zones.push({kind:'halt',x,y,r:d.radius,until:S.t+d.dur});
+    S.units.forEach(u=>{if(Math.hypot(u.x-x,u.y-y)<=d.radius)u.frozenUntil=Math.max(u.frozenUntil,S.t+d.dur);});
+    flashAlert('🧊 ЗАМОРОЗКА ТОРГОВ · HALT',side==='me'?'#38E1EA':'#FF3B4E',1200);
+  }
+  if(key==='ddos'){
+    S.zones.push({kind:'ddos',x,y,r:d.radius,until:S.t+d.dur});
+    S.towers.forEach(t=>{if(t.side!==side&&Math.hypot(t.x-x,t.y-y)<=d.radius)t.disabledUntil=Math.max(t.disabledUntil,S.t+d.dur);});
+    flashAlert('💻 DDOS: ФАКТ-ЧЕКИНГ ОТКЛЮЧЁН',side==='me'?'#F050C8':'#FF3B4E',1300);
+  }
+  if(key==='lever'){
+    S.ap[side]=Math.min(MAX_AP,S.ap[side]+40);
+    S.apSlow[side]=S.t+5;
+    if(side==='me'){flashAlert('📈 КРЕДИТНОЕ ПЛЕЧО · +40 AP','#F0BE3C',1200);
+      hint('lever','Прирост AP урезан вдвое на 5 секунд — плечо не бесплатно');}
+  }
+}
+/* ── чемпионы ── */
+function useChamp(side){
+  const ch=side==='me'?myChamp:foeChamp;
+  if(!ch)return false;
+  const c=CHAMPS[ch];
+  if(S.champCd[side]>0||S.ap[side]<c.cost)return false;
+  if(ch==='whale'){
+    const mine=towersOf(side).filter(t=>t.key!=='paywall');
+    if(!mine.length){if(side==='me')flashAlert('НУЖНА БАШНЯ ДЛЯ ЖЕРТВЫ','#F0BE3C',1100);return false;}
+    const t=mine[0];
+    S.towers.splice(S.towers.indexOf(t),1);
+    spawnGolem(side,t.x,t.y);
+  }
+  S.ap[side]-=c.cost;S.champCd[side]=c.cd;
+  if(ch==='musk'){
+    S.boostUntil[side]=S.t+3;
+    flashAlert('🚀 КЛИКБЕЙТ-ТВИТ · СКОРОСТЬ ×1.7',side==='me'?'#38E1EA':'#FF3B4E',1300);
+  }
+  if(ch==='fed'){
+    const other=side==='me'?'foe':'me';
+    S.apFrozen[other]=S.t+5;
+    S.oko=clamp(S.oko+(side==='me'?-0.06:0.06),-1,1);
+    checkOtWin();
+    flashAlert('🏛 СТАВКА ИЗМЕНЕНА · AP ОППОНЕНТА ЗАМОРОЖЕН',side==='me'?'#F0BE3C':'#FF3B4E',1500);
+  }
+  return true;
+}
+
+/* ── рука/колода: в руке всегда ≥1 атака и ≥1 защита ── */
+const isAtkCard=k=>CARD_DB[k].t==='unit';
+const isDefCard=k=>CARD_DB[k].t==='tower'||CARD_DB[k].t==='wall';
+function drawGuaranteed(queue,hand){
+  let need=null;
+  if(!hand.some(isAtkCard))need=isAtkCard;
+  else if(!hand.some(isDefCard))need=isDefCard;
+  let idx=0;
+  if(need){const f=queue.findIndex(need);if(f>=0)idx=f;}
+  return queue.splice(idx,1)[0];
+}
+function buildHand(queue){
+  const hand=[];
+  for(let i=0;i<4;i++)hand.push(drawGuaranteed(queue,hand));
+  return shuffle(hand);
+}
+function initDecks(){
+  if(TUT.on){
+    S.hand=['fomo','ban','report','paywall'];
+    S.queue=['leak','sniper','lever'];
+    S.foeQueue=shuffle(FOE_DECK.slice());S.foeHand=buildHand(S.foeQueue);
+    renderHand();return;
+  }
+  S.queue=shuffle(playerDeck.filter(Boolean));S.hand=buildHand(S.queue);
+  S.foeQueue=shuffle((curDiff().deck||FOE_DECK).slice());S.foeHand=buildHand(S.foeQueue);
+  renderHand();
+}
+function cycleCard(slot){ // моя рука
+  const played=S.hand[slot];
+  const rest=S.hand.filter((_,i)=>i!==slot);
+  S.queue.push(played);
+  S.hand[slot]=drawGuaranteed(S.queue,rest);
+  renderHand();
+}
+function foeCycle(idx){
+  const played=S.foeHand[idx];
+  const rest=S.foeHand.filter((_,i)=>i!==idx);
+  S.foeQueue.push(played);
+  S.foeHand[idx]=drawGuaranteed(S.foeQueue,rest);
+}
+const TYPE_BAND={unit:'⚔ АТАКА',tower:'🛡 ЗАЩИТА',wall:'🛡 ЗАЩИТА',spell:'⚡ МАГИЯ'};
+function renderHand(){
+  document.querySelectorAll('#handRow .bigcard[data-slot]').forEach(el=>{
+    const slot=+el.dataset.slot,key=S.hand[slot],d=CARD_DB[key];
+    el.className='bigcard '+(d.t==='unit'?'tUnit':d.t==='spell'?'tSpell':'tTower');
+    el.innerHTML=`<div class="cost">${d.cost}</div><div class="lv">ур.${META[key].level}</div><div class="ico">${d.ico}</div><div class="fn">${d.fn}</div><div class="band">${TYPE_BAND[d.t]}</div>`;
+  });
+  $('nextIco').textContent=CARD_DB[S.queue[0]].ico;
+  syncHand();
+}
+function syncHand(){
+  document.querySelectorAll('#handRow .bigcard[data-slot]').forEach(el=>{
+    const slot=+el.dataset.slot,d=CARD_DB[S.hand[slot]];
+    el.classList.toggle('selected',S.selected===slot);
+    el.classList.toggle('poor',S.ap.me<d.cost);
+    el.classList.toggle('locked',S.stunUntil>S.t);
+  });
+  if(myChamp){
+    const c=CHAMPS[myChamp];
+    const cb=$('champBtn');
+    cb.classList.toggle('selected',S.champSel);
+    cb.classList.toggle('poor',S.ap.me<c.cost);
+    cb.classList.toggle('locked',S.stunUntil>S.t);
+    cb.querySelector('.cd').style.height=(S.champCd.me/c.cd*100||0)+'%';
+  }
+  $('scanBtn').querySelector('.cd').style.height=(S.scanCd/SCAN_CD*100||0)+'%';
+}
+
+/* ── ввод ── */
+function selectSlot(slot){
+  if(!S.running||S.stunUntil>S.t)return;
+  if(TUT.on){
+    if(TUT.allow===null)return; // до первого урока рука заблокирована
+    if(S.paused&&S.hand[slot]!==TUT.allow)return; // во время урока — только нужная карта
+  }
+  const d=CARD_DB[S.hand[slot]];
+  if(S.ap.me<d.cost){flashAlert('НЕ ХВАТАЕТ AP','#F0BE3C',800);return;}
+  S.champSel=false;
+  if(d.target==='none'){ // мгновенный спелл без цели
+    S.ap.me-=d.cost;castSpell('me',S.hand[slot],0,0);cycleCard(slot);S.selected=-1;syncHand();return;
+  }
+  S.selected=S.selected===slot?-1:slot;syncHand();
+  if(S.selected>=0){
+    if(d.t==='unit')hint('selU','Тапни полосу — волна пойдёт по ней');
+    else if(d.t==='tower'||d.t==='wall')hint('selT','Тапни точку на своей половине');
+    else hint('selS','Тапни точку применения — радиус сработает там');
+  }
+}
+/* ── общее размещение: используется тапом и драгом ── */
+function canPick(slot){
+  if(!S||!S.running||S.stunUntil>S.t)return false;
+  if(TUT.on){
+    if(TUT.allow===null)return false;
+    if(S.paused&&S.hand[slot]!==TUT.allow)return false;
+  }
+  return true;
+}
+function addPulse(x,y,color){S.pulses.push({x,y,r:10,life:.4,color});}
+function deployCard(slot,x,y){
+  if(!canPick(slot))return false;
+  const key=S.hand[slot],d=CARD_DB[key];
+  if(S.ap.me<d.cost){flashAlert('НЕ ХВАТАЕТ AP','#F0BE3C',800);return false;}
+  /* снапы туториала: действие гарантированно срабатывает эффектно */
+  if(TUT.on&&S.paused){
+    if(TUT.step===1&&key==='ban'){x=laneX(1);y=H*0.72;}
+    
+  }
+  if(d.t==='unit'){
+    const lane=clamp(Math.floor(x/W*LANES),0,LANES-1);
+    S.ap.me-=d.cost;spawnUnits('me',key,lane);registerHeat();
+    addPulse(laneX(lane),H-20,'56,225,234');
+  }else if(d.t==='tower'||d.t==='wall'){
+    if(y<H*0.52){flashAlert('ЗАЩИТА — ТОЛЬКО НА СВОЕЙ ПОЛОВИНЕ','#F0BE3C',1000);return false;}
+    if(towersOf('me').length>=TOWER_CAP){flashAlert('ЛИМИТ ПОСТРОЕК','#F0BE3C',900);return false;}
+    const px=clamp(x,20,W-20),py=clamp(y,H*0.55,H-30);
+    S.ap.me-=d.cost;placeTower('me',key,px,py);
+    addPulse(px,py,'240,190,60');
+  }else{ // spell
+    S.ap.me-=d.cost;castSpell('me',key,x,y);
+    if(d.target==='point')addPulse(x,y,'240,80,200');
+  }
+  cycleCard(slot);S.selected=-1;syncHand();
+  /* прогресс туториала */
+  if(TUT.on&&S.paused){
+    if(TUT.step===1&&key==='ban'){tutResume();TUT.step=2;
+      S.timeScale=0.45;flashAlert('⏱ ЗАМЕДЛЕНИЕ · СМОТРИ, КАК ФИЛЬТР СЖИГАЕТ СЛУХИ','#F0BE3C',2600);
+      setTimeout(()=>{if(S)S.timeScale=1;},3800);}
+    else if(TUT.step===3&&key==='report'){tutResume();TUT.step=4;
+      hint('tut2','Кит дойдёт до края — смотри на линию: она нальётся голубым');}
+    else if(TUT.step===5&&key==='fomo'){tutResume();TUT.step=6;
+      hint('tut5','Каждый добежавший утолщает голубую линию');}
+  }
+  return true;
+}
+function arenaTap(x,y){
+  if(!S.running||S.stunUntil>S.t)return;
+  if(TUT.on&&S.paused&&TUT.allow==='tap'){tutResume();TUT.step=3;return;} // урок Ока: тап продолжает
+  if(S.champSel){S.champSel=false;if(useChamp('me'))syncHand();return;}
+  if(S.selected<0)return;
+  deployCard(S.selected,x,y);
+}
+function useScan(){
+  if(TUT.on&&TUT.allow!=='scan')return; // в обучении скан открыт только в своём уроке
+  if(!S.running||S.scanCd>0||S.ap.me<SCAN_COST||S.stunUntil>S.t)return;
+  S.ap.me-=SCAN_COST;S.scanUntil=S.t+SCAN_DUR;S.scanCd=SCAN_CD;
+  flashAlert('👁 ИНСАЙДЕРСКИЙ СКАН','#F050C8',900);
+  if(TUT.on&&S.paused&&TUT.step===4){
+    setTimeout(()=>{tutResume();TUT.step=5;
+      hint('tut3','Скрытая башня вскрыта. Скан стоит 15 AP — трать его перед атакой');},1600);
+  }
+}
+function registerHeat(){
+  S.heat+=1;
+  if(S.phase===2&&S.heat>=HEAT_LIMIT)shortSqueeze();
+}
+function shortSqueeze(){
+  S.heat=0;
+  S.units=S.units.filter(u=>u.side!=='me');
+  S.stunUntil=S.t+STUN_T;S.selected=-1;S.champSel=false;
+  S.oko=clamp(S.oko-.1,-1,1);checkOtWin();
+  flashAlert('💥 ШОРТ-СКВИЗ · УЗЕЛ ВЗОРВАН · ПОЗИЦИЯ ОБНУЛЕНА','#FF3B4E',2000,true);
+  $('stunOverlay').classList.add('show');
+  setTimeout(()=>$('stunOverlay').classList.remove('show'),STUN_T*1000);
+  hint('squeeze','В панике на бирже резкий сброс волн рвёт узел. Дозируй');
+}
+
+/* ── AI ── */
+function aiThink(dt){
+  if(TUT.on)return; // в туториале бот полностью заскриптован
+  S.aiTick-=dt;if(S.aiTick>0)return;
+  const D=curDiff();
+  S.aiTick=D.tick;
+  if(Math.random()<D.skip)return; // слабый бот часто «думает» вхолостую
+  const ap=S.ap.foe;
+  const handIdx=k=>S.foeHand.indexOf(k);
+  const tryPlay=(k,fn)=>{
+    const i=handIdx(k);if(i<0)return false;
+    const d=CARD_DB[k];if(ap<d.cost)return false;
+    S.ap.foe-=d.cost;fn(d);foeCycle(i);return true;
+  };
+  /* ── базовый режим: медленный бот, чередующий атаку и защиту ──
+     basic2 (СКАЛЬПЕР) в 30% тиков подключает умную контр-логику — разнообразнее */
+  const useSmart = D.mode==='smart' || (D.mode==='basic2'&&Math.random()<.3);
+  if(!useSmart){
+    const lane=Math.floor(Math.random()*LANES);
+    const atk=S.foeHand.filter(k=>CARD_DB[k].t==='unit'&&ap>=CARD_DB[k].cost);
+    const def=S.foeHand.filter(k=>(CARD_DB[k].t==='tower'||CARD_DB[k].t==='wall')&&ap>=CARD_DB[k].cost);
+    if(Math.random()<.65&&atk.length){ // приоритет атаки — бот обязан давить
+      const k=atk[Math.floor(Math.random()*atk.length)];
+      tryPlay(k,()=>spawnUnits('foe',k,lane));return;
+    }
+    if(def.length&&towersOf('foe').length<TOWER_CAP){
+      const k=def[Math.floor(Math.random()*def.length)];
+      tryPlay(k,()=>placeTower('foe',k,laneX(lane)+(Math.random()*40-20),H*(0.14+Math.random()*.26)));return;
+    }
+    if(atk.length){ // защита недоступна — всё равно атакуем
+      const k=atk[Math.floor(Math.random()*atk.length)];
+      tryPlay(k,()=>spawnUnits('foe',k,lane));
+    }
+    return;
+  }
+  /* ── умный режим ── */
+  const meUnits=S.units.filter(u=>u.side==='me');
+  const threats=meUnits.filter(u=>u.y<H*0.6);
+  const smallT=threats.filter(u=>u.key==='fomo').length;
+  const bigT=threats.filter(u=>u.key==='report'||u.key==='golem').length;
+  const myT=towersOf('foe');
+  // чемпион
+  if(S.champCd.foe<=0&&S.phase>=1&&Math.random()<D.champP){if(useChamp('foe'))return;}
+  // защита
+  if(myT.length<TOWER_CAP){
+    if(smallT>=3&&tryPlay('ban',()=>placeTower('foe','ban',laneX(threats[0]?clamp(Math.floor(threats[0].x/W*LANES),0,2):1)+(Math.random()*24-12),H*(0.16+Math.random()*.2))))return;
+    if(bigT>=1&&tryPlay('sniper',()=>placeTower('foe','sniper',threats[0].x+(Math.random()*24-12),H*(0.15+Math.random()*.2))))return;
+    if(bigT>=1&&tryPlay('paywall',()=>placeTower('foe','paywall',threats[0].x,H*0.3)))return;
+    if(bigT>=1&&tryPlay('lawsuit',()=>placeTower('foe','lawsuit',threats[0].x,H*(0.2+Math.random()*.15))))return;
+  }
+  // спеллы
+  if(threats.length>=3&&tryPlay('halt',d=>castSpell('foe','halt',threats[0].x,threats[0].y)))return;
+  const meTowers=towersOf('me');
+  if(meTowers.length>=2&&S.phase>=1&&tryPlay('ddos',d=>castSpell('foe','ddos',meTowers[0].x,meTowers[0].y)))return;
+  if(S.phase>=1&&ap<50&&Math.random()<.25&&tryPlay('lever',()=>castSpell('foe','lever',0,0)))return;
+  // атака — слабозащищённая полоса
+  const laneDef=[0,0,0];
+  towersOf('me').forEach(t=>{laneDef[clamp(Math.floor(t.x/W*LANES),0,2)]++;});
+  let lane=0;for(let i=1;i<LANES;i++)if(laneDef[i]<laneDef[lane])lane=i;
+  if(Math.random()<.3)lane=Math.floor(Math.random()*LANES);
+  const wantBig=S.phase===2?.6:S.phase===1?.4:.12;
+  if(Math.random()<wantBig){
+    if(tryPlay('report',()=>spawnUnits('foe','report',lane)))return;
+    if(tryPlay('meme',()=>spawnUnits('foe','meme',lane)))return;
+    if(tryPlay('leak',()=>spawnUnits('foe','leak',lane)))return;
+  }else{
+    if(Math.random()<.7&&tryPlay('fomo',()=>spawnUnits('foe','fomo',lane)))return;
+    if(tryPlay('meme',()=>spawnUnits('foe','meme',lane)))return;
+    if(tryPlay('leak',()=>spawnUnits('foe','leak',lane)))return;
+  }
+}
+
+/* ── win check ── */
+function checkOtWin(){
+  if(S.overtime&&Math.abs(S.oko)>0.001)endMatch(S.oko>0?'me':'foe','ВНЕЗАПНАЯ СМЕРТЬ · ПЕРВАЯ СВЕЧА ТВОЯ');
+}
+function okoShift(side,amt){
+  S.oko=clamp(S.oko+(side==='me'?amt:-amt),-1,1);
+  S.okoFlash={side,until:S.t+1.3};
+  if(S.streak.side===side)S.streak.hits++;      // серия успешных атак — линия толстеет
+  else S.streak={side,hits:1};                   // смена лидера — толщина сброшена
+  if(TUT.on&&TUT.step<6)S.oko=clamp(S.oko,-0.85,0.85); // до финала досрочной победы нет
+  if(TUT.on&&TUT.step>=6&&side==='me'&&S.oko>0){
+    setTimeout(()=>endMatch('me','ТВОЙ ПРОРЫВ ЗАКРЫЛ РЫНОК'),900); // победа заработана атакой
+    return;
+  }
+  checkOtWin();
+}
+
+/* ── sim step ── */
+function step(dt){
+  if(S.paused)return; // хард-лок туториала: время стоит
+  S.t+=dt;
+  if(TUT.on)tutScript();
+  if(!S.overtime){
+    let ph=0;for(let i=0;i<PHASES.length;i++)if(S.t>PHASES[i].until)ph=Math.min(2,i+1);
+    if(ph!==S.phase){
+      S.phase=ph;
+      $('phaseLbl').textContent=PHASES[ph].lbl;
+      $('phaseLbl').style.color=ph===2?'var(--foe)':ph===1?'var(--me)':'var(--gold)';
+      if(ph===1)flashAlert('ВЫСОКАЯ ВОЛАТИЛЬНОСТЬ · AP ×2','#38E1EA',1300);
+      if(ph===2){flashAlert('ПАНИКА НА БИРЖЕ · AP ×3','#FF3B4E',1700);
+        hint('panic','Ресурсы льются рекой — но узел рвётся от жадности');}
+    }
+  }
+  // AP
+  ['me','foe'].forEach(s=>{
+    if(S.t<S.apFrozen[s])return;
+    let g=AP_BASE*PHASES[S.phase].mult*dt;
+    if(s==='foe')g*=curDiff().apMult; // хэндикап слабого бота
+    if(S.t<S.apSlow[s])g*=0.5;
+    S.ap[s]=Math.min(MAX_AP,S.ap[s]+g);
+  });
+  // линия-лента: семпл каждые 0.25с — кто доминирует и множитель серии
+  S.lineT+=dt;
+  while(S.lineT>=0.25){
+    S.lineT-=0.25;
+    const dom=S.oko>0.005?1:S.oko<-0.005?-1:0;
+    const mult=S.streak.hits>=2?Math.min(6,S.streak.hits):1; // утолщение после 2 атак подряд, потолок ×6
+    S.line.push({t:S.t,dom,mult});
+  }
+  S.champCd.me=Math.max(0,S.champCd.me-dt);
+  S.champCd.foe=Math.max(0,S.champCd.foe-dt);
+  S.scanCd=Math.max(0,S.scanCd-dt);
+  S.heat=Math.max(0,S.heat-HEAT_DECAY*dt);
+  aiThink(dt);
+  // юниты: движение + стены
+  S.units.forEach(u=>{
+    u.blocked=false;
+    if(S.t<u.frozenUntil)return;
+    // стена на пути?
+    const wall=S.towers.find(t=>t.key==='paywall'&&t.side!==u.side
+      &&Math.abs(t.x-u.x)<W/LANES*0.45
+      &&(u.dir<0? (u.y>t.y&&u.y-t.y<18) : (u.y<t.y&&t.y-u.y<18)));
+    if(wall){
+      u.blocked=true;
+      wall.hp-=(UNIT_WALL_DPS[u.key]||2)*dt;
+      return;
+    }
+    let spd=u.spd;
+    if(S.t<S.boostUntil[u.side])spd*=1.7;
+    if(S.towers.some(tw=>tw.key==='lawsuit'&&tw.side!==u.side&&S.t>=tw.disabledUntil&&Math.hypot(tw.x-u.x,tw.y-u.y)<=CARD_DB.lawsuit.range))spd*=CARD_DB.lawsuit.slow;
+    u.y+=u.dir*spd*dt;
+  });
+  // стены: распад
+  S.towers=S.towers.filter(t=>{
+    if(t.key==='paywall'){t.hp-=0.8*dt;return t.hp>0;}
+    return S.t<t.dieAt;
+  });
+  // прорывы
+  const edgeTop=6,edgeBot=H-6;
+  S.units=S.units.filter(u=>{
+    if(u.side==='me'&&u.y<=edgeTop){okoShift('me',u.shiftLvl||u.shift);addFloat(u.x,20,'+ВЛИЯНИЕ','56,225,234');
+      if(TUT.on&&u.key==='report'&&!TUT.reportDone){TUT.reportDone=true;TUT.reportAt=S.t;}
+      return false;}
+    if(u.side==='foe'&&u.y>=edgeBot){okoShift('foe',u.shiftLvl||u.shift);
+      if(u.shift>=.28)flashAlert('⚠ ПРОРЫВ: ТЯЖЁЛЫЙ АРГУМЕНТ ДОШЁЛ','#FF3B4E',1300);return false;}
+    return true;
+  });
+  if(!S.running)return; // мог закончиться в okoShift
+  // башни
+  S.towers.forEach(t=>{
+    if(t.key==='paywall')return;
+    if(S.t<t.disabledUntil)return;
+    if(t.key==='lawsuit')return; // иск не стреляет — только замедляет
+    t.cd-=dt;if(t.cd>0)return;
+    const d=CARD_DB[t.key];
+    let foes=S.units.filter(u=>u.side!==t.side&&Math.hypot(u.x-t.x,u.y-t.y)<=d.range);
+    if(t.key==='sniper')foes=foes.filter(u=>!u.stealth); // слив невидим для снайпера
+    if(!foes.length)return;
+    let target;
+    if(t.key==='sniper')target=foes.reduce((a,b)=>b.hp>a.hp?b:a);
+    else target=foes.reduce((a,b)=>Math.hypot(b.x-t.x,b.y-t.y)<Math.hypot(a.x-t.x,a.y-t.y)?b:a);
+    t.cd=d.rate;
+    S.shots.push({x1:t.x,y1:t.y,x2:target.x,y2:target.y,life:.22,splash:d.splash||0,color:t.side==='me'?'240,190,60':'255,59,78'});
+    const dmg=d.dmg*lvlMult(t.lvl);
+    if(d.splash){S.units.forEach(u=>{if(u.side!==t.side&&Math.hypot(u.x-target.x,u.y-target.y)<=d.splash)u.hp-=dmg;});}
+    else target.hp-=dmg;
+  });
+  S.units.forEach(u=>{if(u.hp<=0){
+    addPulse(u.x,u.y,u.side==='me'?'56,225,234':'255,59,78');
+    if(TUT.on)addFloat(u.x,u.y,'ОПРОВЕРГНУТО','240,190,60');
+  }});
+  S.units=S.units.filter(u=>u.hp>0);
+  S.zones=S.zones.filter(z=>S.t<z.until);
+  S.shots.forEach(s=>s.life-=dt);S.shots=S.shots.filter(s=>s.life>0);
+  S.pulses.forEach(p=>{p.life-=dt;p.r+=140*dt;});S.pulses=S.pulses.filter(p=>p.life>0);
+  S.floats.forEach(f=>{f.life-=dt;f.y-=12*dt;});S.floats=S.floats.filter(f=>f.life>0);
+  // таймер / овертайм
+  if(!S.overtime&&S.t>=MATCH_T){
+    if(Math.abs(S.oko)>0.02)return endMatch(S.oko>0?'me':'foe','ПО ЗАКРЫТИЮ ГРАФИКА');
+    S.overtime=true;S.otT=S.t;
+    $('timer').classList.add('ot');
+    $('phaseLbl').textContent='ОВЕРТАЙМ · ВНЕЗАПНАЯ СМЕРТЬ';
+    $('phaseLbl').style.color='var(--foe)';
+    flashAlert('⚡ ОВЕРТАЙМ: ПЕРВАЯ СВЕЧА РЕШАЕТ','#F0BE3C',2200,true);
+  }
+  if(S.overtime&&S.t-S.otT>=OT_T){
+    const w=TUT.on?'me':(Math.random()<.5?'me':'foe');
+    return endMatch(w,TUT.on?'ОБУЧЕНИЕ ПРОЙДЕНО':'РЫНОК ЗАМЕР · СЛУЧАЙНЫЙ ТИК');
+  }
+}
+
+/* ── match flow ── */
+function startMatch(){
+  S=freshMatch();initDecks();
+  $('timer').classList.remove('ot');
+  $('matchRes').classList.add('hidden');
+  $('countdown').classList.remove('hidden');
+  let c=3;$('countNum').textContent=c;
+  const iv=setInterval(()=>{
+    c--;if(c>0)$('countNum').textContent=c;
+    else{clearInterval(iv);$('countdown').classList.add('hidden');S.running=true;
+      $('phaseLbl').textContent=PHASES[0].lbl;$('phaseLbl').style.color='var(--gold)';
+      if(!TUT.on)hint('start','Перетаскивай карты на поле: ⚔ атака — на врага, 🛡 защита — к себе, ⚡ магия — в точку');}
+  },800);
+}
+function endMatch(winner,how){
+  if(!S.running)return;
+  S.running=false;
+  const wasTut=TUT.on;
+  const win=winner==='me';
+  if(!wasTut){
+    if(win)duelWins++;
+    liveMatches++;
+    if(battleCtx&&battleCtx.ev){battleCtx.ev.duels.n++;if(win)battleCtx.ev.duels.w++;}
+  }
+  const reward=wasTut?100:(win?REWARD_WIN:REWARD_LOSE);
+  quants+=reward;
+  const xp=wasTut?30:(win?25:10);
+  const leveled=addXP(xp);
+  $('matchXP').textContent='+'+xp+' XP'+(leveled?' · 🎉 УРОВЕНЬ '+PLVL.lvl+'! Потолок карт: ур.'+cardCap():'');
+  $('matchXP').style.color=leveled?'var(--gold)':'var(--me)';
+  syncBalance();
+  $('unlockRow').classList.add('hidden');
+  if(wasTut)unlockCard('halt','<div class="usep"></div><div class="ut">В ИГРЕ ТРИ ВИДА КАРТ</div><div class="ulist"><div>⚔️ — атака</div><div>🛡️ — защита</div><div>⚡️ — магия</div></div>');
+  else if(win&&duelWins===1)unlockCard('meme','<div class="ud">Переживают факт-чек, где толпа сгорает</div>');
+  else if(win&&duelWins===2)unlockCard('lawsuit','<div class="ud">Урона нет — комбинируй с башнями</div>');
+  if(wasTut){
+    tutorialDone=true;TUT.on=false;syncDeckTab();
+    $('matchTitle').textContent='ПЕРВАЯ ПОБЕДА';
+    $('matchTitle').style.color='var(--me)';
+    $('matchOko').textContent=how;
+    $('matchSub').textContent='СТАРТОВЫЙ КАПИТАЛ · ЗАЩИТА, АТАКА И МАГИЯ ОСВОЕНЫ';
+    $('matchReward').textContent='+'+reward+' ⟠ КВАНТОВ';
+    $('matchReward').style.color='var(--gold)';
+    $('matchRes').classList.remove('hidden');
+    return;
+  }
+  $('matchTitle').textContent=win?'МНЕНИЕ ОТСТОЯНО':'ОППОНЕНТ ПЕРЕУБЕДИЛ РЫНОК';
+  $('matchTitle').style.color=win?'var(--me)':'var(--foe)';
+  $('matchOko').textContent=how;
+  let sub=win?'ТВОЙ НАРРАТИВ ПОБЕДИЛ В ИНФОПОЛЕ':'ФАКТ-ЧЕКИНГ ОППОНЕНТА ОКАЗАЛСЯ СИЛЬНЕЕ';
+  if(liveMatches===2)sub='⚠ ДАЛЬШЕ — РЕАЛЬНЫЕ БИТВЫ: МЕТКИ «?» ИСЧЕЗАЮТ, СОПЕРНИКИ ПРЯЧУТ ЗАЩИТУ. ВСКРЫВАЙ ЕЁ СКАНОМ 👁';
+  if(liveMatches===CHAMP_UNLOCK_AT)sub='👑 НОВЫЙ ТИП КАРТ — ВИЗИОНЕРЫ (МАРКЕТМЕЙКЕРЫ): В СЛЕДУЮЩЕМ БОЮ ВЫБЕРЕШЬ СВОЕГО';
+  $('matchSub').textContent=sub;
+  $('matchReward').textContent=reward>0?'+'+reward+' ⟠ КВАНТОВ':'БЕЗ НАГРАДЫ · КВАНТЫ У ПОБЕДИТЕЛЯ';
+  $('matchReward').style.color=reward>0?'var(--gold)':'var(--muted)';
+  $('matchRes').classList.remove('hidden');
+}
+
+/* ── render ── */
+function draw(t){
+  ctx.clearRect(0,0,W,H);
+  const midY=H*0.5;
+  let g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'rgba(255,59,78,.06)');g.addColorStop(.5,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(56,225,234,.06)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(107,116,132,.12)';ctx.lineWidth=1;
+  for(let i=1;i<LANES;i++){ctx.beginPath();ctx.moveTo(W*i/LANES,0);ctx.lineTo(W*i/LANES,H);ctx.stroke();}
+
+  const scan=S.running&&S.t<S.scanUntil;
+  if(!scan){ctx.fillStyle='rgba(7,8,11,.42)';ctx.fillRect(0,0,W,midY);}
+  else{ctx.fillStyle='rgba(240,80,200,.05)';ctx.fillRect(0,0,W,midY);}
+  // зоны спеллов
+  S.zones.forEach(z=>{
+    const a=(z.until-S.t)/3;
+    ctx.strokeStyle=z.kind==='halt'?`rgba(56,225,234,${.3*a+.15})`:`rgba(240,80,200,${.3*a+.15})`;
+    ctx.setLineDash([4,4]);ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.stroke();ctx.setLineDash([]);
+  });
+  // постройки
+  S.towers.forEach(tw=>{
+    const mine=tw.side==='me';
+    const hidden=!mine&&!scan&&tw.y<midY;
+    const col=mine?'240,190,60':'255,59,78';
+    const dis=S.t<tw.disabledUntil;
+    if(hidden){
+      if(TUT.on||liveMatches<2){ // с 3-го живого матча меток нет — только скан
+        ctx.fillStyle='rgba(107,116,132,.5)';ctx.fillRect(tw.x-8,tw.y-8,16,16);
+        ctx.fillStyle='rgba(168,176,190,.8)';ctx.font='800 11px JetBrains Mono';ctx.textAlign='center';
+        ctx.fillText('?',tw.x,tw.y+4);
+      }
+      return;
+    }
+    if(tw.key==='paywall'){
+      const hw=W/LANES*0.42;
+      ctx.fillStyle=`rgba(${col},${dis?.3:.75})`;
+      ctx.fillRect(tw.x-hw,tw.y-5,hw*2,10);
+      ctx.fillStyle='rgba(7,8,11,.6)';
+      for(let i=-3;i<=3;i++)ctx.fillRect(tw.x+i*hw/3.5-1,tw.y-5,2,10);
+      ctx.fillStyle='rgba(7,8,11,.7)';ctx.fillRect(tw.x-hw,tw.y-11,hw*2,3);
+      ctx.fillStyle=`rgba(${col},.9)`;ctx.fillRect(tw.x-hw,tw.y-11,hw*2*tw.hp/tw.maxHp,3);
+      return;
+    }
+    const d=CARD_DB[tw.key];
+    ctx.strokeStyle=`rgba(${col},${dis?.05:.12})`;ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(tw.x,tw.y,d.range,0,7);ctx.stroke();
+    ctx.fillStyle=dis?'rgba(107,116,132,.6)':`rgba(${col},.9)`;
+    if(tw.key==='lawsuit'){
+      ctx.setLineDash([4,5]);ctx.strokeStyle=`rgba(${col},.35)`;ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(tw.x,tw.y,CARD_DB.lawsuit.range,0,7);ctx.stroke();ctx.setLineDash([]);
+      ctx.save();ctx.translate(tw.x,tw.y);ctx.rotate(Math.PI/4);
+      ctx.fillRect(-7,-7,14,14);ctx.restore();
+      ctx.fillStyle='rgba(7,8,11,.9)';ctx.font='800 10px JetBrains Mono';ctx.textAlign='center';
+      ctx.fillText('⚖',tw.x,tw.y+3.5);
+    }else if(tw.key==='sniper'){
+      ctx.fillRect(tw.x-8,tw.y-8,16,16);
+      ctx.strokeStyle='rgba(7,8,11,.9)';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(tw.x-5,tw.y);ctx.lineTo(tw.x+5,tw.y);ctx.moveTo(tw.x,tw.y-5);ctx.lineTo(tw.x,tw.y+5);ctx.stroke();
+    }else{
+      ctx.beginPath();ctx.arc(tw.x,tw.y,9,0,7);ctx.fill();
+      ctx.strokeStyle=dis?'rgba(107,116,132,.4)':`rgba(${col},.5)`;
+      ctx.beginPath();ctx.arc(tw.x,tw.y,13,0,7);ctx.stroke();
+    }
+    // остаток жизни
+    const lifeFrac=clamp((tw.dieAt-S.t)/CARD_DB[tw.key].life,0,1);
+    ctx.strokeStyle=`rgba(${col},.7)`;ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(tw.x,tw.y,16,-Math.PI/2,-Math.PI/2+Math.PI*2*lifeFrac);ctx.stroke();
+    if(dis){ctx.fillStyle='rgba(240,80,200,.9)';ctx.font='800 9px JetBrains Mono';ctx.textAlign='center';ctx.fillText('OFFLINE',tw.x,tw.y+28);}
+  });
+  // юниты
+  S.units.forEach(u=>{
+    const mine=u.side==='me';
+    if(!mine&&!scan&&u.y<midY)return;
+    const col=mine?'56,225,234':'255,59,78';
+    const frozen=S.t<u.frozenUntil;
+    const alpha=u.stealth?.55:.95;
+    const halo=ctx.createRadialGradient(u.x,u.y,1,u.x,u.y,u.r*3);
+    halo.addColorStop(0,`rgba(${frozen?'168,216,255':col},.5)`);halo.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(u.x,u.y,u.r*3,0,7);ctx.fill();
+    ctx.fillStyle=frozen?'rgba(168,216,255,.9)':`rgba(${col},${alpha})`;
+    if(u.key==='report'||u.key==='golem'){
+      ctx.beginPath();
+      for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6;
+        const px=u.x+Math.cos(a)*u.r,py=u.y+Math.sin(a)*u.r;
+        i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+      ctx.closePath();ctx.fill();
+      ctx.fillStyle='rgba(7,8,11,.7)';ctx.fillRect(u.x-12,u.y-u.r-7,24,3);
+      ctx.fillStyle=`rgba(${col},.9)`;ctx.fillRect(u.x-12,u.y-u.r-7,24*u.hp/u.maxHp,3);
+    }else if(u.stealth){
+      ctx.setLineDash([3,3]);ctx.strokeStyle=`rgba(${col},.9)`;ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(u.x,u.y,u.r+2,0,7);ctx.stroke();ctx.setLineDash([]);
+      ctx.beginPath();ctx.arc(u.x,u.y,u.r,0,7);ctx.fill();
+    }else{
+      ctx.beginPath();ctx.arc(u.x,u.y,u.r,0,7);ctx.fill();
+    }
+  });
+  // выстрелы
+  S.shots.forEach(s=>{
+    ctx.strokeStyle=`rgba(${s.color},${s.life/.22*.9})`;ctx.lineWidth=s.splash?2:2.8;
+    ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(s.x2,s.y2);ctx.stroke();
+    if(s.splash){ctx.strokeStyle=`rgba(${s.color},${s.life/.22*.45})`;
+      ctx.beginPath();ctx.arc(s.x2,s.y2,s.splash,0,7);ctx.stroke();}
+  });
+  // подписи
+  S.floats.forEach(f=>{
+    ctx.fillStyle=`rgba(${f.color},${clamp(f.life,0,1)})`;
+    ctx.font='700 9.5px JetBrains Mono';ctx.textAlign='center';
+    ctx.fillText(f.txt,f.x,f.y);
+  });
+  // ОКО
+  /* ═══ ОКО-ЛИНИЯ: горизонтальная лента вместо пунктирной оси ═══
+     цвет = кто доминирует (циан ты / красный оппонент), толщина = серия атак лидера */
+  const BLU='56,225,234', RED='255,59,78';
+  const LINE_BASE=3, x0=8, plotW=W-16, WIN=60; // окно = длительность матча
+  const winStart=Math.max(0,S.t-WIN);
+  const tx2px=tt=>x0+((tt-winStart)/WIN)*plotW;
+  // лента по сегментам (0.25с каждый)
+  S.line.forEach(pt=>{
+    if(pt.t<winStart)return;
+    const x=tx2px(pt.t), wSeg=(0.25/WIN)*plotW+0.6;
+    const h=LINE_BASE*(pt.dom===0?1:pt.mult);
+    ctx.fillStyle=pt.dom>0?`rgba(${BLU},.92)`:pt.dom<0?`rgba(${RED},.92)`:'rgba(240,190,60,.45)';
+    ctx.fillRect(x,midY-h/2,wSeg,h);
+  });
+  // маркер Ока на конце линии
+  const mX=tx2px(S.t), mY=midY;
+  const oc2=S.oko>0.005?BLU:S.oko<-0.005?RED:'240,190,60';
+  const halo2=ctx.createRadialGradient(mX,mY,1,mX,mY,18);
+  halo2.addColorStop(0,`rgba(${oc2},.55)`);halo2.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=halo2;ctx.beginPath();ctx.arc(mX,mY,18,0,7);ctx.fill();
+  ctx.fillStyle='#E8ECF1';ctx.beginPath();ctx.arc(mX,mY,5.5+(S.overtime?Math.sin(t*8)*1.5:0),0,7);ctx.fill();
+  ctx.fillStyle='#07080B';ctx.beginPath();ctx.arc(mX,mY,2.2,0,7);ctx.fill();
+  // акцент сдвига: мягкое свечение вдоль линии (без стрелок)
+  if(S.okoFlash&&S.t<S.okoFlash.until){
+    const toMe=S.okoFlash.side==='me';
+    const a=clamp((S.okoFlash.until-S.t)/1.3,0,1);
+    const fc=toMe?BLU:RED;
+    const fg=ctx.createLinearGradient(0,midY-24,0,midY+24);
+    fg.addColorStop(0,'rgba(0,0,0,0)');fg.addColorStop(.5,`rgba(${fc},${.14*a})`);fg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=fg;ctx.fillRect(0,midY-24,W,48);
+    if(TUT.on){ctx.font='800 10px JetBrains Mono';ctx.textAlign='left';
+      ctx.fillStyle=`rgba(${fc},${a})`;
+      ctx.fillText(toMe?'РЫНОК ТВОЙ — ЛИНИЯ ГОЛУБАЯ':'РЫНОК ПАДАЕТ — ЛИНИЯ КРАСНАЯ',8,midY-30);}
+  }
+  // пульсы полной заливки при установке
+  S.pulses.forEach(p=>{
+    ctx.strokeStyle=`rgba(${p.color},${clamp(p.life/.4,0,1)})`;
+    ctx.lineWidth=3*clamp(p.life/.4,0,1)+1;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.stroke();
+  });
+  // ── призрак перетаскиваемой карты (полупрозрачный, заливка при дропе) ──
+  if(dragP&&dragP.active&&dragP.py>0&&dragP.py<H){
+    const gd=CARD_DB[S.hand[dragP.slot]];
+    const gx=dragP.px,gy=dragP.py;
+    ctx.save();ctx.globalAlpha=.45;
+    if(gd.t==='unit'){
+      const lane=clamp(Math.floor(gx/W*LANES),0,LANES-1);
+      // подсветка полосы
+      ctx.fillStyle='rgba(56,225,234,.10)';
+      ctx.fillRect(W*lane/LANES,0,W/LANES,H);
+      ctx.strokeStyle='rgba(56,225,234,.5)';ctx.setLineDash([6,6]);ctx.lineWidth=1.5;
+      ctx.strokeRect(W*lane/LANES+2,2,W/LANES-4,H-4);ctx.setLineDash([]);
+      // призраки юнитов под пальцем
+      ctx.fillStyle='rgba(56,225,234,.9)';
+      for(let i=0;i<gd.count;i++){
+        const ox=(gd.count>1?(i-(gd.count-1)/2)*14:0);
+        if(gd.hp>=10){
+          ctx.beginPath();
+          for(let k=0;k<6;k++){const a=Math.PI/3*k-Math.PI/6;
+            const hx=gx+ox+Math.cos(a)*gd.r,hy=gy+Math.sin(a)*gd.r;
+            k?ctx.lineTo(hx,hy):ctx.moveTo(hx,hy);}
+          ctx.closePath();ctx.fill();
+        } else {ctx.beginPath();ctx.arc(gx+ox,gy,gd.r,0,7);ctx.fill();}
+      }
+    } else if(gd.t==='tower'||gd.t==='wall'){
+      const ok=gy>=H*0.52&&towersOf('me').length<TOWER_CAP;
+      const col=ok?'240,190,60':'255,59,78';
+      if(gd.t==='wall'){
+        const hw=W/LANES*0.42;
+        ctx.fillStyle=`rgba(${col},.8)`;ctx.fillRect(gx-hw,gy-5,hw*2,10);
+      } else {
+        ctx.strokeStyle=`rgba(${col},.4)`;ctx.lineWidth=1;
+        ctx.beginPath();ctx.arc(gx,gy,gd.range,0,7);ctx.stroke();
+        ctx.fillStyle=`rgba(${col},.9)`;
+        if(S.hand[dragP.slot]==='sniper')ctx.fillRect(gx-8,gy-8,16,16);
+        else{ctx.beginPath();ctx.arc(gx,gy,9,0,7);ctx.fill();}
+      }
+      if(!ok){ctx.globalAlpha=.9;ctx.fillStyle='rgba(255,59,78,.9)';ctx.font='800 9px JetBrains Mono';ctx.textAlign='center';ctx.fillText('НА СВОЮ ПОЛОВИНУ',gx,gy-18);}
+    } else { // spell
+      if(gd.radius){
+        ctx.strokeStyle='rgba(240,80,200,.7)';ctx.setLineDash([5,5]);ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(gx,gy,gd.radius,0,7);ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle='rgba(240,80,200,.15)';
+        ctx.beginPath();ctx.arc(gx,gy,gd.radius,0,7);ctx.fill();
+      } else {
+        ctx.fillStyle='rgba(240,190,60,.9)';ctx.font='800 14px JetBrains Mono';ctx.textAlign='center';
+        ctx.fillText('+40 AP',gx,gy);
+      }
+    }
+    ctx.restore();
+  }
+  // ── туториал: затемнение арены + мишень + стрелка от карты ──
+  if(TUT.on&&S.paused){
+    ctx.fillStyle='rgba(4,5,8,.45)';ctx.fillRect(0,0,W,H);
+    let tx=null,ty=null;
+    if(TUT.step===1){tx=laneX(1);ty=H*0.72;} // центр своей половины
+    else if(TUT.step===2){tx=null;} // урок Ока: акцент на оси, рука не нужна
+    else if(TUT.step===3){tx=laneX(1);ty=H*0.42;}
+    else if(TUT.step===4){tx=W-36;ty=H*0.22;} // скрытая башня «?»
+    else if(TUT.step===5){tx=laneX(1);ty=H*0.30;} // финальная атака — на половину врага
+    if(TUT.step===2){ // урок линии: кольцо внимания на маркере
+      const mX2=8+(Math.min(S.t,60)/60)*(W-16), mY2=H*0.5;
+      ctx.strokeStyle='rgba(240,190,60,'+(0.55+Math.sin(t*5)*.35)+')';
+      ctx.lineWidth=2.5;
+      ctx.beginPath();ctx.arc(mX2,mY2,24+Math.sin(t*5)*5,0,7);ctx.stroke();
+    }
+    if(tx!==null){
+      // пульсирующая мишень
+      ctx.strokeStyle='rgba(240,190,60,'+(0.5+Math.sin(t*6)*.3)+')';
+      ctx.lineWidth=2;ctx.setLineDash([6,5]);
+      ctx.beginPath();ctx.arc(tx,ty,26+Math.sin(t*6)*4,0,7);ctx.stroke();ctx.setLineDash([]);
+      if(TUT.step===1){ctx.fillStyle='rgba(240,190,60,.9)';ctx.font='800 9px JetBrains Mono';ctx.textAlign='center';ctx.fillText('СЮДА',tx,ty+3);}
+      // рука-указатель: демонстрирует жест перетаскивания от карты к мишени
+      if(TUT.step!==4){
+        const hi=document.querySelector('.tutHi');
+        if(hi){
+          const hr=hi.getBoundingClientRect(),cr=cv.getBoundingClientRect();
+          const sx=clamp(hr.left+hr.width/2-cr.left,10,W-10),sy=H-6;
+          const CYCLE=1.8, ph=(t%CYCLE)/CYCLE;
+          // 0–0.65 движение по дуге, 0.65–1.0 «тап» на мишени
+          let hx,hy,press=0;
+          if(ph<0.65){
+            const k=ph/0.65, e=k*k*(3-2*k); // ease in-out
+            const cxq=(sx+tx)/2+(sx>tx?50:-50),cyq=(sy+ty)/2;
+            hx=(1-e)*(1-e)*sx+2*(1-e)*e*cxq+e*e*tx;
+            hy=(1-e)*(1-e)*sy+2*(1-e)*e*cyq+e*e*ty;
+            // полупрозрачный след жеста
+            ctx.strokeStyle='rgba(240,190,60,.35)';ctx.lineWidth=2;ctx.setLineDash([4,7]);
+            ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(cxq,cyq,tx,ty);ctx.stroke();ctx.setLineDash([]);
+          } else {
+            hx=tx;hy=ty;
+            press=Math.sin((ph-0.65)/0.35*Math.PI); // нажатие
+          }
+          // белая перчатка: ладонь + указательный палец (в стиле CR)
+          const sc=1-press*0.18;
+          ctx.save();ctx.translate(hx,hy);ctx.scale(sc,sc);
+          ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=8;ctx.shadowOffsetY=3;
+          ctx.fillStyle='#F5F5F2';
+          // палец (кончик в точке мишени)
+          ctx.beginPath();ctx.ellipse(4,14,7,15,-.35,0,7);ctx.fill();
+          // ладонь-кулак
+          ctx.beginPath();ctx.ellipse(13,30,15,13,-.25,0,7);ctx.fill();
+          // манжет
+          ctx.shadowColor='transparent';
+          ctx.fillStyle='#D9DCE2';
+          ctx.beginPath();ctx.ellipse(24,38,7,10,-.5,0,7);ctx.fill();
+          ctx.restore();
+          if(press>0){ // круг нажатия
+            ctx.strokeStyle='rgba(255,255,255,'+(0.7*press)+')';ctx.lineWidth=2.5;
+            ctx.beginPath();ctx.arc(tx,ty,18+press*10,0,7);ctx.stroke();
+          }
+        }
+      }
+    }
+  }
+  // зона размещения
+  if(S.selected>=0||S.champSel){
+    const d=S.selected>=0?CARD_DB[S.hand[S.selected]]:null;
+    const own=d&&(d.t==='tower'||d.t==='wall');
+    ctx.fillStyle=own?'rgba(240,190,60,.06)':'rgba(56,225,234,.05)';
+    if(own)ctx.fillRect(0,midY,W,H-midY);else ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle=own?'rgba(240,190,60,.5)':'rgba(56,225,234,.4)';
+    ctx.setLineDash([6,6]);ctx.lineWidth=1.5;
+    ctx.strokeRect(2,own?midY+2:2,W-4,(own?H-midY:H)-4);
+    ctx.setLineDash([]);
+  }
+}
+
+/* ── loop ── */
+let lastT=0;
+function loop(ts){
+  requestAnimationFrame(loop);
+  const dt=Math.min(.05,(ts-lastT)/1000)||0;lastT=ts;
+  if(S&&S.running)step(dt*(S.timeScale||1));
+  if(S&&!$('scrBattle').classList.contains('hidden')){
+    let tl;
+    if(S.overtime)tl=Math.max(0,OT_T-(S.t-S.otT));
+    else tl=Math.max(0,MATCH_T-S.t);
+    const m=Math.floor(tl/60),sec=Math.ceil(tl%60);
+    $('timer').textContent=m+':'+String(sec===60?0:sec).padStart(2,'0');
+    $('apNum').innerHTML=Math.floor(S.ap.me)+'<span> AP</span>';
+    $('apFill').style.width=(S.ap.me/MAX_AP*100)+'%';
+    $('heatFill').style.width=clamp(S.heat/HEAT_LIMIT*100,0,100)+'%';
+    syncHand();draw(ts/1000);
+  }
+}
+
+/* ── champion select & переходы ── */
+function openChampSelect(){
+  const keys=Object.keys(CHAMPS);
+  foeChamp=keys[Math.floor(Math.random()*keys.length)];
+  $('champFoeInfo').innerHTML='Оппонент взял: <b>'+CHAMPS[foeChamp].ico+' '+CHAMPS[foeChamp].nm+'</b> — готовься к этому';
+  const row=$('champRow');row.innerHTML='';
+  keys.forEach(k=>{
+    const c=CHAMPS[k];
+    const el=document.createElement('div');el.className='champCard';
+    el.innerHTML=`<div class="ci">${c.ico}</div><div class="cn">${c.nm}</div><div class="cdsc">${c.desc}</div><div class="cn" style="margin-top:6px;color:var(--dim)">${c.cost} AP · КД ${c.cd}с</div>`;
+    el.addEventListener('pointerdown',()=>{myChamp=k;$('champWrap').classList.add('hidden');enterBattle();});
+    row.appendChild(el);
+  });
+  $('champWrap').classList.remove('hidden');
+}
+function enterBattle(){
+  battleCtx={ev:duelEv,mySide:duelMySide};
+  $('scrMarket').classList.add('hidden');
+  $('scrBattle').classList.remove('hidden');
+  $('handRow').classList.toggle('nochamp',!myChamp);
+  $('meLbl').textContent='ТЫ · ур.'+PLVL.lvl;
+  if(TUT.on){
+    $('foeLbl').textContent='БОТ-ТРЕНЕР';
+    $('foeChampIco').textContent='';$('meChampIco').textContent='';
+    $('bQuestion').textContent='ОБУЧАЮЩИЙ МАТЧ · освой защиту, атаку и магию за 60 секунд';
+  }else{
+    $('foeLbl').textContent=$('duelFoeName').textContent+' · ур.'+foeLvl();
+    $('foeChampIco').textContent=foeChamp?CHAMPS[foeChamp].ico:'';
+    $('meChampIco').textContent=myChamp?CHAMPS[myChamp].ico:'';
+    $('bQuestion').textContent='«'+duelEv.q+'» · ты: '+(duelMySide==='yes'?'ДА':'НЕТ')+' vs оппонент: '+(duelMySide==='yes'?'НЕТ':'ДА');
+  }
+  if(myChamp){
+    $('champIco').textContent=CHAMPS[myChamp].ico;
+    $('champNm').textContent=CHAMPS[myChamp].nm;
+    $('champCost').textContent=CHAMPS[myChamp].cost;
+  }
+  resize();startMatch();
+}
+$('backBtn').addEventListener('pointerdown',()=>{
+  $('scrBattle').classList.add('hidden');
+  $('scrMarket').classList.remove('hidden');
+  renderMarket();
+});
+/* ── input wiring ── */
+/* ── драг как основной способ, тап-тап как запасной ── */
+let dragP=null; // {slot,x0,y0,active,px,py}
+document.querySelectorAll('#handRow .bigcard[data-slot]').forEach(el=>{
+  el.addEventListener('pointerdown',e=>{
+    try{el.setPointerCapture(e.pointerId);}catch(_){}
+    dragP={slot:+el.dataset.slot,x0:e.clientX,y0:e.clientY,active:false,px:0,py:0};
+  });
+});
+window.addEventListener('pointermove',e=>{
+  if(!dragP)return;
+  if(!dragP.active){
+    if(Math.hypot(e.clientX-dragP.x0,e.clientY-dragP.y0)<=20)return;
+    if(!canPick(dragP.slot)||S.ap.me<CARD_DB[S.hand[dragP.slot]].cost){dragP=null;return;}
+    dragP.active=true;S.selected=-1;S.champSel=false;syncHand();
+  }
+  const r=cv.getBoundingClientRect();
+  dragP.px=e.clientX-r.left;dragP.py=e.clientY-r.top;
+},{passive:true});
+window.addEventListener('pointerup',e=>{
+  const dp=dragP;dragP=null;
+  if(!dp)return;
+  if(!dp.active){selectSlot(dp.slot);return;} // короткий тап — старое поведение
+  const r=cv.getBoundingClientRect();
+  const x=e.clientX-r.left,y=e.clientY-r.top;
+  if(x>=-10&&x<=W+10&&y>=0&&y<=H+10)deployCard(dp.slot,clamp(x,0,W-1),clamp(y,0,H-1));
+  syncHand();
+});
+window.addEventListener('pointercancel',()=>{dragP=null;});
+$('champBtn').addEventListener('pointerdown',()=>{
+  if(!S||!S.running||S.stunUntil>S.t)return;
+  const c=CHAMPS[myChamp];
+  if(S.champCd.me>0)return;
+  if(S.ap.me<c.cost){flashAlert('НЕ ХВАТАЕТ AP','#F0BE3C',800);return;}
+  S.selected=-1;
+  if(useChamp('me'))syncHand();
+});
+$('scanBtn').addEventListener('pointerdown',useScan);
+cv.addEventListener('pointerdown',e=>{
+  const r=cv.getBoundingClientRect();
+  arenaTap(e.clientX-r.left,e.clientY-r.top);
+});
+
+/* ── boot ── */
+syncBalance();renderMarket();renderShop();syncDeckTab();
+resize();requestAnimationFrame(ts=>{lastT=ts;loop(ts);});
+</script>
+</body>
+</html>

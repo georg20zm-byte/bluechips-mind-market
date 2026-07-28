@@ -1,0 +1,43 @@
+{
+  "season": {
+    "id": "s01",
+    "name": "Сезон 1 · Открытие торгов",
+    "start": "2026-08-01",
+    "end": "2026-09-30",
+    "theme_color": "#38E1EA"
+  },
+  "categories": [
+    { "id": "all",      "label": "ВСЕ",        "emoji": "🌐" },
+    { "id": "sports",   "label": "СПОРТ",      "emoji": "🏈" },
+    { "id": "economy",  "label": "ЭКОНОМИКА",  "emoji": "📊" },
+    { "id": "finance",  "label": "ФИНАНСЫ",    "emoji": "💹" },
+    { "id": "politics", "label": "ПОЛИТИКА",   "emoji": "🏛" },
+    { "id": "culture",  "label": "КУЛЬТУРА",   "emoji": "🎬" }
+  ],
+  "events_source": {
+    "mode": "static_json",
+    "url": "/data/events.json",
+    "refresh_min": 60,
+    "top_per_category": 20,
+    "comment": "events.json генерируется воркером worker/events-parser.js из Polymarket API"
+  },
+  "rewards_track": [
+    { "lvl": 1,  "free": { "quants": 50 },              "premium": { "chips": 10 } },
+    { "lvl": 2,  "free": { "quants": 75 },              "premium": { "card": "meme", "copies": 2 } },
+    { "lvl": 3,  "free": { "card": "lawsuit", "copies": 1 }, "premium": { "chips": 20 } },
+    { "lvl": 5,  "free": { "quants": 150 },             "premium": { "card": "ddos", "copies": 1 } },
+    { "lvl": 8,  "free": { "chips": 5 },                "premium": { "emote": "diamond_hands" } },
+    { "lvl": 10, "free": { "quants": 300 },             "premium": { "champion_skin": "musk_gold" } }
+  ],
+  "season_rules": {
+    "xp_win": 25,
+    "xp_loss": 10,
+    "xp_event_resolve": 15,
+    "weekly_quest_slots": 3
+  },
+  "_todo": [
+    "подключить загрузку этого файла в js/00-state-market.js вместо хардкода EVENTS",
+    "экран сезонного трека (rewards_track) во вкладке НАБОРЫ или отдельной",
+    "premium-ветка трека продаётся за чипы (сезонный пропуск)"
+  ]
+}

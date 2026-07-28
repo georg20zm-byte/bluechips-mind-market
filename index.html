@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Blue Chips: Mind Market · v0.8</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="root">
+
+  <!-- ═══ MARKET ═══ -->
+  <div class="scr" id="scrMarket">
+    <div id="mktTop">
+      <div id="mktLogo">BLUE CHIPS <span>MIND MARKET</span><div style="font:700 8px var(--mono);color:var(--muted);letter-spacing:2px;margin-top:2px">v0.9.16</div></div>
+      <div style="text-align:right">
+        <div style="display:flex;gap:10px;justify-content:flex-end;align-items:baseline">
+          <span id="chipsNum" style="font:800 15px var(--mono);color:#5B9BFF">5 🔷</span>
+          <span id="balNum" style="font:800 18px var(--mono);color:var(--gold)">100 ⟠</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:4px">
+          <span id="plvlNum" style="font:800 9px var(--mono);color:var(--me);letter-spacing:1px">УР. 1</span>
+          <div style="width:56px;height:5px;background:var(--panel);border-radius:3px;overflow:hidden"><div id="plvlFill" style="height:100%;width:0%;background:var(--me)"></div></div>
+        </div>
+      </div>
+    </div>
+    <div id="tabs">
+      <div class="tab on" data-t="mkt">СОБЫТИЯ</div>
+      <div class="tab" data-t="deck">💼 ПОРТФЕЛЬ</div>
+      <div class="tab" data-t="shop">НАБОРЫ</div>
+    </div>
+    <div id="mktList"></div>
+    <div id="mktList2" class="hidden"></div>
+  </div>
+
+  <!-- конструктор колоды -->
+  <div id="deckWrap" class="hidden">
+    <div id="deckHead"><div><div id="deckTitle">БОЕВОЙ ПОРТФЕЛЬ</div><div id="deckOpp"></div></div>
+      <div style="text-align:right"><div id="deckTimer"></div><div id="deckQ" style="font:800 11px var(--mono);color:var(--gold);margin-top:3px"></div></div></div>
+    <div id="deckIntro">Портфель — твои <b>8 боевых карт</b>. Перетащи карту из коллекции в слот. Тап по карте — характеристики и прокачка до <b>10 ур.</b> за кванты ⟠. Перед боем есть 10 секунд пересобрать портфель под соперника.</div>
+    <div id="deckOB" class="hidden"></div>
+    <div id="deckFrame">
+      <div id="deckLbl">⚔ БОЕВОЙ НАБОР · 8 КАРТ</div>
+      <div id="deckRow"></div>
+    </div>
+    <div id="collFrame">
+      <div id="collLbl">КОЛЛЕКЦИЯ · ТЯНИ КАРТУ В НАБОР · ТАП — ХАРАКТЕРИСТИКИ</div>
+      <div id="collGrid"></div>
+    </div>
+    <div id="deckReady">ГОТОВ · В БОЙ</div>
+  </div>
+
+  <!-- страница карты -->
+  <div id="cardWrap" class="hidden">
+    <div id="cardBox">
+      <div id="cbBand"></div>
+      <div id="cbWallet" style="font:800 10px var(--mono);color:var(--dim);letter-spacing:.5px;margin-top:9px"></div>
+      <div id="cbIco"></div><div id="cbName"></div><div id="cbLvl"></div>
+      <div id="cbDesc"></div>
+      <div id="cbStats"></div>
+      <div id="cbLock" class="hidden"></div>
+      <div id="cbUp"></div>
+      <div id="cbUpNote"></div>
+      <div id="cbClose">Закрыть</div>
+    </div>
+  </div>
+
+  <div id="sheetWrap" class="hidden">
+    <div id="sheet">
+      <div id="shQ"></div><div id="shSide"></div><div id="shPrice"></div>
+      <div id="amtRow">
+        <input type="range" id="amtSlider" min="5" max="100" step="5" value="25">
+        <input type="number" id="amtInput" min="5" step="5" value="25" inputmode="numeric">
+      </div>
+      <div id="shCalc"><span>Шеры: <b id="shShares">0</b></span><span>Выплата при исходе: <b id="shPayout">0 ⟠</b></span></div>
+      <div id="shConfirm">ИНВЕСТИРОВАТЬ</div><div id="shCancel">Отмена</div>
+    </div>
+  </div>
+
+  <div id="duelWrap" class="hidden">
+    <div id="duel">
+      <div id="duelIco">⚔</div>
+      <div id="duelTitle">Отстоять своё мнение?</div>
+      <div id="duelSub">Найден оппонент с противоположной позицией.<br>Победа <b style="color:var(--gold)">+40 ⟠</b>. Кванты достаются только победителю.</div>
+      <div id="duelFoe">ОППОНЕНТ: <span class="fn" id="duelFoeName"></span><br><span style="color:var(--muted)">его мнение: <span id="duelFoeSide"></span></span></div>
+      <div id="duelGo">В БОЙ · ЗАРАБОТАТЬ КВАНТЫ</div>
+      <div id="duelLater">Позже</div>
+    </div>
+  </div>
+
+  <!-- champion select -->
+  <div id="champWrap" class="hidden">
+    <div id="champBox">
+      <div id="champTitle">ВЫБЕРИ МАРКЕТМЕЙКЕРА</div>
+      <div id="champFoeInfo"></div>
+      <div id="champRow"></div>
+    </div>
+  </div>
+
+  <!-- ═══ BATTLE ═══ -->
+  <div class="scr hidden" id="scrBattle">
+    <div id="bTop">
+      <div id="barRow">
+        <div class="fighter" style="color:var(--foe)"><span class="fc" id="foeChampIco"></span><span id="foeLbl">ОППОНЕНТ</span></div>
+        <div><div id="timer">1:30</div><div id="phaseLbl">ОТКРЫТИЕ ТОРГОВ · ×1</div></div>
+        <div class="fighter" style="color:var(--me);text-align:right"><span id="meLbl">ТЫ</span><span class="fc" id="meChampIco" style="margin:0 0 0 3px"></span></div>
+      </div>
+      <div id="bQuestion"></div>
+    </div>
+    <div id="cwrap">
+      <canvas id="cv"></canvas>
+      <div id="stunOverlay"></div><div id="alert"></div><div id="hintTip"></div>
+    </div>
+    <div id="hud">
+      <div id="tutShade" class="hidden"></div>
+      <div id="apRow">
+        <div id="apNum">0<span> AP</span></div>
+        <div id="apBar"><div id="apFill"></div></div>
+        <div id="heatWrap"><div id="heatLbl">ИНЕРЦИЯ</div><div id="heatBar"><div id="heatFill"></div></div></div>
+        <div id="scanBtn">👁 СКАН<div class="cd"></div></div>
+      </div>
+      <div id="handRow">
+        <div class="bigcard" id="champBtn"><div class="cost" id="champCost"></div><div class="crown">👑</div><div class="ico" id="champIco"></div><div class="nm" id="champNm"></div><div class="mm">МАРКЕТМЕЙКЕР</div><div class="cd"></div></div>
+        <div class="bigcard" data-slot="0"></div>
+        <div class="bigcard" data-slot="1"></div>
+        <div class="bigcard" data-slot="2"></div>
+        <div class="bigcard" data-slot="3"></div>
+        <div id="nextCard"><div class="ni" id="nextIco"></div><div class="nl">ДАЛЕЕ</div></div>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="countdown"><div id="countNum">3</div></div>
+    <div id="tutText" class="hidden"></div>
+    <div class="overlay hidden" id="matchRes">
+      <div id="matchTitle"></div>
+      <div id="matchOko"></div>
+      <div id="matchSub" style="font:700 11px var(--mono);color:var(--muted);margin-top:6px;letter-spacing:1px"></div>
+      <div id="matchReward"></div>
+      <div id="matchXP" style="font:800 12px var(--mono);color:var(--me);margin-top:8px;letter-spacing:1px"></div>
+      <div id="unlockRow" class="hidden"></div>
+      <div class="cta" id="backBtn">К РЫНКУ →</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/00-state-market.js"></script>
+<script src="js/01-portfolio.js"></script>
+<script src="js/02-cards-meta.js"></script>
+<script src="js/03-tutorial.js"></script>
+<script src="js/04-engine.js"></script>
+<script src="js/05-render.js"></script>
+<script src="js/06-flow-input.js"></script>
+</body>
+</html>
