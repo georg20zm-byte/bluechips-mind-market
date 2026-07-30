@@ -68,31 +68,61 @@ function draw(t){
     ctx.beginPath();ctx.arc(tw.x,tw.y,16,-Math.PI/2,-Math.PI/2+Math.PI*2*lifeFrac);ctx.stroke();
     if(dis){ctx.fillStyle='rgba(240,80,200,.9)';ctx.font='800 9px JetBrains Mono';ctx.textAlign='center';ctx.fillText('OFFLINE',tw.x,tw.y+28);}
   });
-  // юниты
+  // юниты — процедурная анимация (без спрайтов, всё математикой)
   S.units.forEach(u=>{
     const mine=u.side==='me';
     if(!mine&&!scan&&u.y<midY)return;
     const col=mine?'56,225,234':'255,59,78';
     const frozen=S.t<u.frozenUntil;
     const alpha=u.stealth?.55:.95;
-    const halo=ctx.createRadialGradient(u.x,u.y,1,u.x,u.y,u.r*3);
+    // фаза анимации привязана к позиции — стабильна между кадрами
+    const ph=u.y*0.35+(u.seed||0);
+    const moving=!frozen&&!u.blocked;
+    // трейл: короткий шлейф за движущимся юнитом
+    if(moving&&Math.abs(u.spd)>10){
+      for(let k=1;k<=3;k++){
+        const ty=u.y+u.dir*k*4, ta=(0.16-k*0.045)*alpha;
+        if(ta<=0)continue;
+        ctx.fillStyle=`rgba(${col},${ta})`;
+        ctx.beginPath();ctx.arc(u.x,ty,u.r*(1-k*0.12),0,7);ctx.fill();
+      }
+    }
+    // ореол c дыханием
+    const pulse=frozen?1:1+Math.sin(t*4+ph)*0.06;
+    const halo=ctx.createRadialGradient(u.x,u.y,1,u.x,u.y,u.r*3*pulse);
     halo.addColorStop(0,`rgba(${frozen?'168,216,255':col},.5)`);halo.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(u.x,u.y,u.r*3,0,7);ctx.fill();
+    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(u.x,u.y,u.r*3*pulse,0,7);ctx.fill();
     ctx.fillStyle=frozen?'rgba(168,216,255,.9)':`rgba(${col},${alpha})`;
+
     if(u.key==='report'||u.key==='golem'){
+      // ТЯЖ (кит/голем): медленный крен корпуса, тяжёлая поступь
+      const roll=frozen?0:Math.sin(t*3+ph)*0.12;
+      ctx.save();ctx.translate(u.x,u.y);ctx.rotate(roll);
       ctx.beginPath();
       for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6;
-        const px=u.x+Math.cos(a)*u.r,py=u.y+Math.sin(a)*u.r;
+        const px=Math.cos(a)*u.r,py=Math.sin(a)*u.r;
         i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
       ctx.closePath();ctx.fill();
+      ctx.restore();
       ctx.fillStyle='rgba(7,8,11,.7)';ctx.fillRect(u.x-12,u.y-u.r-7,24,3);
       ctx.fillStyle=`rgba(${col},.9)`;ctx.fillRect(u.x-12,u.y-u.r-7,24*u.hp/u.maxHp,3);
     }else if(u.stealth){
-      ctx.setLineDash([3,3]);ctx.strokeStyle=`rgba(${col},.9)`;ctx.lineWidth=1.5;
+      // НЕВИДИМКА: мерцает прозрачностью, пунктирный контур крутится
+      const flick=0.55+Math.sin(t*6+ph)*0.25;
+      ctx.globalAlpha=frozen?1:flick;
+      ctx.setLineDash([3,3]);ctx.lineDashOffset=-t*8;
+      ctx.strokeStyle=`rgba(${col},.9)`;ctx.lineWidth=1.5;
       ctx.beginPath();ctx.arc(u.x,u.y,u.r+2,0,7);ctx.stroke();ctx.setLineDash([]);
       ctx.beginPath();ctx.arc(u.x,u.y,u.r,0,7);ctx.fill();
+      ctx.globalAlpha=1;
     }else{
-      ctx.beginPath();ctx.arc(u.x,u.y,u.r,0,7);ctx.fill();
+      // ТОЛПА/спам: быстрое дрожание в стороны + сжатие-растяжение (бег)
+      const wob=moving?Math.sin(t*14+ph)*2.2:0;
+      const sx=moving?1+Math.sin(t*14+ph)*0.12:1;
+      const sy=moving?1-Math.sin(t*14+ph)*0.12:1;
+      ctx.save();ctx.translate(u.x+wob,u.y);ctx.scale(sx,sy);
+      ctx.beginPath();ctx.arc(0,0,u.r,0,7);ctx.fill();
+      ctx.restore();
     }
   });
   // выстрелы

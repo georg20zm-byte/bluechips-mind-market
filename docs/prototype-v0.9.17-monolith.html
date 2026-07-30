@@ -242,6 +242,16 @@
   #matchReward{font:800 22px var(--mono);color:var(--gold);margin-top:14px}
   .cta{margin-top:20px;background:var(--me);color:#06171A;font:800 15px var(--mono);letter-spacing:1px;padding:14px 40px;border-radius:10px;cursor:pointer}
   .cta:active{transform:scale(.95)}
+
+/* ── чипсы категорий над лентой ── */
+#catBar{display:flex;gap:7px;overflow-x:auto;padding:10px 2px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#catBar::-webkit-scrollbar{display:none}
+#catBar .cat{flex:0 0 auto;white-space:nowrap;border:1.5px solid var(--line);border-radius:20px;padding:7px 13px;font:800 11px var(--mono);color:var(--muted);cursor:pointer;letter-spacing:.5px;transition:all .15s}
+#catBar .cat b{color:var(--gold);margin-left:2px}
+#catBar .cat.on{border-color:var(--me);color:var(--me);background:rgba(56,225,234,.08)}
+#catBar .cat.on b{color:var(--me)}
+.moreBtn{text-align:center;border:1px dashed var(--line);border-radius:10px;padding:11px;margin-top:4px;font:800 11px var(--mono);color:var(--muted);letter-spacing:1px;cursor:pointer}
+.moreBtn:active{background:var(--panel2)}
 </style>
 </head>
 <body>
@@ -250,7 +260,7 @@
   <!-- ═══ MARKET ═══ -->
   <div class="scr" id="scrMarket">
     <div id="mktTop">
-      <div id="mktLogo">BLUE CHIPS <span>MIND MARKET</span><div style="font:700 8px var(--mono);color:var(--muted);letter-spacing:2px;margin-top:2px">v0.9.16</div></div>
+      <div id="mktLogo">BLUE CHIPS <span>MIND MARKET</span><div style="font:700 8px var(--mono);color:var(--muted);letter-spacing:2px;margin-top:2px">v0.9.17</div></div>
       <div style="text-align:right">
         <div style="display:flex;gap:10px;justify-content:flex-end;align-items:baseline">
           <span id="chipsNum" style="font:800 15px var(--mono);color:#5B9BFF">5 🔷</span>
@@ -267,6 +277,7 @@
       <div class="tab" data-t="deck">💼 ПОРТФЕЛЬ</div>
       <div class="tab" data-t="shop">НАБОРЫ</div>
     </div>
+    <div id="catBar"></div>
     <div id="mktList"></div>
     <div id="mktList2" class="hidden"></div>
   </div>
@@ -412,18 +423,61 @@ function animateQ(from,to){ // плавное списание квантов
     if(k<1)requestAnimationFrame(f);else{quants=to;syncPlayerUI();}
   })(t0);
 }
-const EVENTS=[
-  {id:'ai', q:'Лопнет ли пузырь ИИ до конца лета?',       poolY:6200,poolN:3800,resolved:null,dl:'31 АВГ'},
-  {id:'btc',q:'Биткоин выше $150K к 1 сентября?',         poolY:2900,poolN:7100,resolved:null,dl:'1 СЕН'},
-  {id:'fed',q:'ФРС снизит ставку на июльском заседании?', poolY:5100,poolN:4900,resolved:null,dl:'29 ИЮЛ'},
+const CATEGORIES=[
+  {id:'all',      label:'ВСЕ',       emoji:'🌐'},
+  {id:'finance',  label:'ФИНАНСЫ',   emoji:'💹'},
+  {id:'economy',  label:'ЭКОНОМИКА',  emoji:'📊'},
+  {id:'politics', label:'ПОЛИТИКА',   emoji:'🏛'},
+  {id:'sports',   label:'СПОРТ',      emoji:'🏈'},
+  {id:'culture',  label:'КУЛЬТУРА',   emoji:'🎬'},
 ];
-EVENTS.forEach(e=>{e.pos={yes:{sh:0,inv:0},no:{sh:0,inv:0}};e.duels={n:0,w:0};});
+let curCat='all';
+// стартовый набор — фолбэк, если живые события ещё не загрузились
+let EVENTS=[
+  {id:'ai', q:'Лопнет ли пузырь ИИ до конца лета?',       poolY:6200,poolN:3800,resolved:null,dl:'31 АВГ',category:'finance'},
+  {id:'btc',q:'Биткоин выше $150K к 1 сентября?',         poolY:2900,poolN:7100,resolved:null,dl:'1 СЕН',category:'finance'},
+  {id:'fed',q:'ФРС снизит ставку на июльском заседании?', poolY:5100,poolN:4900,resolved:null,dl:'29 ИЮЛ',category:'economy'},
+];
+function initEvent(e){e.pos={yes:{sh:0,inv:0},no:{sh:0,inv:0}};e.duels={n:0,w:0};if(!e.category)e.category='culture';return e;}
+EVENTS.forEach(initEvent);
+
+// живые события из data/events.json (генерит worker/events-parser.js из Polymarket).
+// Не загрузилось — тихо остаёмся на фолбэк-наборе, игра работает всегда.
+async function loadLiveEvents(){
+  try{
+    const res=await fetch('data/events.json',{cache:'no-store'});
+    if(!res.ok)return;
+    const data=await res.json();
+    const flat=[];
+    Object.values(data.categories||{}).forEach(arr=>arr.forEach(ev=>{
+      flat.push(initEvent({
+        id:ev.id, q:ev.q, category:ev.category,
+        poolY:Math.round((ev.priceYes||0.5)*10000),
+        poolN:Math.round((1-(ev.priceYes||0.5))*10000),
+        resolved:null, dl:(ev.dl||'').replace(/-/g,'.').slice(5)||'—', url:ev.url||null,
+      }));
+    }));
+    if(flat.length){EVENTS=flat;renderCats();renderMarket();}
+  }catch(_){/* оффлайн или файла нет — остаёмся на фолбэке */}
+}
 const REPORT=[]; // отчёт игрока: резолвы событий с профитом и статой дуэлей
 const FOE_NAMES=['SHORT_KING','ГЭП_ХАНТЕР','TETHER_ENJOYER','МАРЖИН_КОЛЛ','DIAMOND_РУКИ','FUD_МАШИНА'];
 const priceY=e=>e.poolY/(e.poolY+e.poolN);
 const fmtQ=n=>Math.round(n)+' ⟠';
 const $=id=>document.getElementById(id);
 function syncBalance(){syncPlayerUI();}
+function renderCats(){
+  const bar=$('catBar');if(!bar)return;
+  bar.innerHTML=CATEGORIES.map(c=>{
+    const n=c.id==='all'?EVENTS.filter(e=>!e.resolved).length:EVENTS.filter(e=>e.category===c.id&&!e.resolved).length;
+    if(c.id!=='all'&&n===0)return ''; // прячем пустые категории
+    return `<div class="cat${c.id===curCat?' on':''}" data-c="${c.id}">${c.emoji} ${c.label}${n?' <b>'+n+'</b>':''}</div>`;
+  }).join('');
+  bar.querySelectorAll('.cat').forEach(el=>el.addEventListener('pointerdown',()=>{
+    curCat=el.dataset.c;catShowAll=false;renderCats();renderMarket();$('mktList').scrollTop=0;
+  }));
+}
+let catShowAll=false;
 function renderMarket(){
   const L=$('mktList');L.innerHTML='';
   if(REPORT.length){
@@ -432,7 +486,17 @@ function renderMarket(){
       REPORT.map(x=>`<div class="pos"><span>«${x.q}» → <b style="color:${x.res==='yes'?'var(--me)':'var(--foe)'}">${x.res==='yes'?'ДА':'НЕТ'}</b>${x.n?'<br>дуэли по событию: побед '+x.wr+'% из '+x.n:''}</span><span class="pv" style="color:${x.pay>=0?'var(--me)':'var(--foe)'}">${x.pay>=0?'+':''}${Math.round(x.pay)} ⟠</span></div>`).join('');
     L.appendChild(r);
   }
-  EVENTS.forEach(e=>{
+  let feed=curCat==='all'?EVENTS.slice():EVENTS.filter(e=>e.category===curCat);
+  // незавершённые вперёд, лимит топ-5 (не перегружаем ленту), «ещё» разворачивает
+  feed.sort((a,b)=>(a.resolved?1:0)-(b.resolved?1:0));
+  const LIMIT=5, total=feed.length;
+  if(!catShowAll&&total>LIMIT)feed=feed.slice(0,LIMIT);
+  if(!feed.length){
+    const empt=document.createElement('div');empt.className='ev';
+    empt.innerHTML='<div class="evMeta">В этой категории пока нет открытых событий</div>';
+    L.appendChild(empt);
+  }
+  feed.forEach(e=>{
     const py=priceY(e),pn=1-py;
     const card=document.createElement('div');card.className='ev';
     let html=`<div class="evQ">${e.q}</div>
@@ -456,6 +520,12 @@ function renderMarket(){
     if(!e.resolved)html+=`<div class="pos"><span style="color:var(--muted)">симуляция исхода для теста</span><span class="devBtn" data-dev="${e.id}">⚙ РЕЗОЛВ</span></div>`;
     card.innerHTML=html;L.appendChild(card);
   });
+  if(!catShowAll&&total>LIMIT){
+    const more=document.createElement('div');more.className='moreBtn';
+    more.textContent='ПОКАЗАТЬ ЕЩЁ '+(total-LIMIT)+' →';
+    more.addEventListener('pointerdown',()=>{catShowAll=true;renderMarket();});
+    L.appendChild(more);
+  }
   L.querySelectorAll('.evBtn').forEach(b=>b.addEventListener('pointerdown',()=>openSheet(b.dataset.e,b.dataset.s)));
   L.querySelectorAll('.devBtn').forEach(b=>b.addEventListener('pointerdown',()=>devResolve(b.dataset.dev)));
 }
@@ -512,6 +582,7 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('pointerdown',()
   }
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
   $('mktList').classList.toggle('hidden',t.dataset.t!=='mkt');
+  $('catBar').classList.toggle('hidden',t.dataset.t!=='mkt');
   $('mktList2').classList.toggle('hidden',t.dataset.t!=='shop');
 }));
 
@@ -554,6 +625,7 @@ $('shConfirm').addEventListener('pointerdown',()=>{
   $('sheetWrap').classList.add('hidden');
   openDuel();
 });
+
 /* ── конструктор колоды ── */
 let deckSel=-1,deckIv=null,deckOnReady=null;
 function cardMini(key,opts){
@@ -797,6 +869,7 @@ $('duelGo').addEventListener('pointerdown',()=>{
   openDeck(true,start); // 10 секунд на пересборку колоды под соперника
 });
 
+
 /* ═════════════ КАРТЫ / КОЛОДА ═════════════ */
 const CARD_DB={
   fomo:   {t:'unit', ico:'🌀', nm:'FOMO-СПАМ',    fn:'ТОЛПА · БЫСТРЫЕ',  cost:25, count:4, hp:1,  spd:88, shift:.05, r:4},
@@ -862,6 +935,7 @@ let duelWins=0;
 // плавная лестница: 1-й живой матч ХОМЯК, 2-й СКАЛЬПЕР, 3-4-й ТРЕЙДЕР, дальше АКУЛА
 const curDiff=()=>DIFFS[liveMatches<=0?0:liveMatches===1?1:liveMatches<4?2:3];
 
+
 /* ── онбординг и разблокировка маркетмейкеров ── */
 let tutorialDone=false, liveMatches=0;
 const CHAMP_UNLOCK_AT=3;
@@ -906,7 +980,7 @@ function tutScript(){
   }else if(TUT.step===2){ // демонстрация Ока: тренер прорывается
     if(!TUT.demoSpawned&&S.t>=8){
       TUT.demoSpawned=true;
-      S.units.push({side:'foe',key:'fomo',lane:0,x:laneX(0),y:14,hp:1,maxHp:1,spd:88,dir:1,r:4,stealth:false,shift:CARD_DB.fomo.shift,frozenUntil:0,blocked:false,tutDemo:true});
+      S.units.push({side:'foe',key:'fomo',lane:0,x:laneX(0),y:14,hp:1,maxHp:1,spd:88,dir:1,r:4,stealth:false,shift:CARD_DB.fomo.shift,frozenUntil:0,blocked:false,tutDemo:true,seed:Math.random()*6.28});
       addFloat(laneX(0),40,'СЛУХ ПРОСОЧИЛСЯ','255,59,78');
     }
     if(TUT.demoSpawned&&!S.units.some(u=>u.tutDemo)&&!TUT.pOko){TUT.pOko=true;
@@ -924,6 +998,7 @@ function tutScript(){
       tutPause('fomo','Кит дошёл — линия голубая! Закрепи тренд: перетащи <b>🌀 толпу</b> и забери рынок',slotOf('fomo'));}
   }
 }
+
 
 
 /* ═════════════ BATTLER v0.8 ═════════════ */
@@ -985,7 +1060,7 @@ function spawnUnits(side,key,lane){
   const dir=side==='me'?-1:1;
   const y0=side==='me'?H-14:14;
   for(let i=0;i<d.count;i++){
-    S.units.push({side,key,lane,lvl,shiftLvl,
+    S.units.push({side,key,lane,lvl,shiftLvl,seed:Math.random()*6.28,
       x:laneX(lane)+(d.count>1?(i-(d.count-1)/2)*13:0)+(Math.random()*8-4),
       y:y0-dir*i*10,
       hp,maxHp:hp,spd:d.spd*(0.92+Math.random()*.16),dir,r:d.r,
@@ -995,7 +1070,7 @@ function spawnUnits(side,key,lane){
 }
 function spawnGolem(side,x,y){
   const dir=side==='me'?-1:1;
-  S.units.push({side,key:'golem',lane:clamp(Math.floor(x/W*LANES),0,LANES-1),
+  S.units.push({side,key:'golem',seed:Math.random()*6.28,lane:clamp(Math.floor(x/W*LANES),0,LANES-1),
     x,y,hp:20,maxHp:20,spd:34,dir,r:12,stealth:false,shift:.4,frozenUntil:0,blocked:false});
   addFloat(x,y-20,'ГОЛЕМ КАПИТАЛА',side==='me'?'56,225,234':'255,59,78');
 }
@@ -1496,6 +1571,7 @@ function endMatch(winner,how){
   $('matchRes').classList.remove('hidden');
 }
 
+
 /* ── render ── */
 function draw(t){
   ctx.clearRect(0,0,W,H);
@@ -1566,31 +1642,61 @@ function draw(t){
     ctx.beginPath();ctx.arc(tw.x,tw.y,16,-Math.PI/2,-Math.PI/2+Math.PI*2*lifeFrac);ctx.stroke();
     if(dis){ctx.fillStyle='rgba(240,80,200,.9)';ctx.font='800 9px JetBrains Mono';ctx.textAlign='center';ctx.fillText('OFFLINE',tw.x,tw.y+28);}
   });
-  // юниты
+  // юниты — процедурная анимация (без спрайтов, всё математикой)
   S.units.forEach(u=>{
     const mine=u.side==='me';
     if(!mine&&!scan&&u.y<midY)return;
     const col=mine?'56,225,234':'255,59,78';
     const frozen=S.t<u.frozenUntil;
     const alpha=u.stealth?.55:.95;
-    const halo=ctx.createRadialGradient(u.x,u.y,1,u.x,u.y,u.r*3);
+    // фаза анимации привязана к позиции — стабильна между кадрами
+    const ph=u.y*0.35+(u.seed||0);
+    const moving=!frozen&&!u.blocked;
+    // трейл: короткий шлейф за движущимся юнитом
+    if(moving&&Math.abs(u.spd)>10){
+      for(let k=1;k<=3;k++){
+        const ty=u.y+u.dir*k*4, ta=(0.16-k*0.045)*alpha;
+        if(ta<=0)continue;
+        ctx.fillStyle=`rgba(${col},${ta})`;
+        ctx.beginPath();ctx.arc(u.x,ty,u.r*(1-k*0.12),0,7);ctx.fill();
+      }
+    }
+    // ореол c дыханием
+    const pulse=frozen?1:1+Math.sin(t*4+ph)*0.06;
+    const halo=ctx.createRadialGradient(u.x,u.y,1,u.x,u.y,u.r*3*pulse);
     halo.addColorStop(0,`rgba(${frozen?'168,216,255':col},.5)`);halo.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(u.x,u.y,u.r*3,0,7);ctx.fill();
+    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(u.x,u.y,u.r*3*pulse,0,7);ctx.fill();
     ctx.fillStyle=frozen?'rgba(168,216,255,.9)':`rgba(${col},${alpha})`;
+
     if(u.key==='report'||u.key==='golem'){
+      // ТЯЖ (кит/голем): медленный крен корпуса, тяжёлая поступь
+      const roll=frozen?0:Math.sin(t*3+ph)*0.12;
+      ctx.save();ctx.translate(u.x,u.y);ctx.rotate(roll);
       ctx.beginPath();
       for(let i=0;i<6;i++){const a=Math.PI/3*i-Math.PI/6;
-        const px=u.x+Math.cos(a)*u.r,py=u.y+Math.sin(a)*u.r;
+        const px=Math.cos(a)*u.r,py=Math.sin(a)*u.r;
         i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
       ctx.closePath();ctx.fill();
+      ctx.restore();
       ctx.fillStyle='rgba(7,8,11,.7)';ctx.fillRect(u.x-12,u.y-u.r-7,24,3);
       ctx.fillStyle=`rgba(${col},.9)`;ctx.fillRect(u.x-12,u.y-u.r-7,24*u.hp/u.maxHp,3);
     }else if(u.stealth){
-      ctx.setLineDash([3,3]);ctx.strokeStyle=`rgba(${col},.9)`;ctx.lineWidth=1.5;
+      // НЕВИДИМКА: мерцает прозрачностью, пунктирный контур крутится
+      const flick=0.55+Math.sin(t*6+ph)*0.25;
+      ctx.globalAlpha=frozen?1:flick;
+      ctx.setLineDash([3,3]);ctx.lineDashOffset=-t*8;
+      ctx.strokeStyle=`rgba(${col},.9)`;ctx.lineWidth=1.5;
       ctx.beginPath();ctx.arc(u.x,u.y,u.r+2,0,7);ctx.stroke();ctx.setLineDash([]);
       ctx.beginPath();ctx.arc(u.x,u.y,u.r,0,7);ctx.fill();
+      ctx.globalAlpha=1;
     }else{
-      ctx.beginPath();ctx.arc(u.x,u.y,u.r,0,7);ctx.fill();
+      // ТОЛПА/спам: быстрое дрожание в стороны + сжатие-растяжение (бег)
+      const wob=moving?Math.sin(t*14+ph)*2.2:0;
+      const sx=moving?1+Math.sin(t*14+ph)*0.12:1;
+      const sy=moving?1-Math.sin(t*14+ph)*0.12:1;
+      ctx.save();ctx.translate(u.x+wob,u.y);ctx.scale(sx,sy);
+      ctx.beginPath();ctx.arc(0,0,u.r,0,7);ctx.fill();
+      ctx.restore();
     }
   });
   // выстрелы
@@ -1794,6 +1900,7 @@ function loop(ts){
   }
 }
 
+
 /* ── champion select & переходы ── */
 function openChampSelect(){
   const keys=Object.keys(CHAMPS);
@@ -1881,7 +1988,7 @@ cv.addEventListener('pointerdown',e=>{
 });
 
 /* ── boot ── */
-syncBalance();renderMarket();renderShop();syncDeckTab();
+syncBalance();renderCats();renderMarket();renderShop();syncDeckTab();loadLiveEvents();
 resize();requestAnimationFrame(ts=>{lastT=ts;loop(ts);});
 </script>
 </body>

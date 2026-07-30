@@ -27,18 +27,61 @@ function animateQ(from,to){ // плавное списание квантов
     if(k<1)requestAnimationFrame(f);else{quants=to;syncPlayerUI();}
   })(t0);
 }
-const EVENTS=[
-  {id:'ai', q:'Лопнет ли пузырь ИИ до конца лета?',       poolY:6200,poolN:3800,resolved:null,dl:'31 АВГ'},
-  {id:'btc',q:'Биткоин выше $150K к 1 сентября?',         poolY:2900,poolN:7100,resolved:null,dl:'1 СЕН'},
-  {id:'fed',q:'ФРС снизит ставку на июльском заседании?', poolY:5100,poolN:4900,resolved:null,dl:'29 ИЮЛ'},
+const CATEGORIES=[
+  {id:'all',      label:'ВСЕ',       emoji:'🌐'},
+  {id:'finance',  label:'ФИНАНСЫ',   emoji:'💹'},
+  {id:'economy',  label:'ЭКОНОМИКА',  emoji:'📊'},
+  {id:'politics', label:'ПОЛИТИКА',   emoji:'🏛'},
+  {id:'sports',   label:'СПОРТ',      emoji:'🏈'},
+  {id:'culture',  label:'КУЛЬТУРА',   emoji:'🎬'},
 ];
-EVENTS.forEach(e=>{e.pos={yes:{sh:0,inv:0},no:{sh:0,inv:0}};e.duels={n:0,w:0};});
+let curCat='all';
+// стартовый набор — фолбэк, если живые события ещё не загрузились
+let EVENTS=[
+  {id:'ai', q:'Лопнет ли пузырь ИИ до конца лета?',       poolY:6200,poolN:3800,resolved:null,dl:'31 АВГ',category:'finance'},
+  {id:'btc',q:'Биткоин выше $150K к 1 сентября?',         poolY:2900,poolN:7100,resolved:null,dl:'1 СЕН',category:'finance'},
+  {id:'fed',q:'ФРС снизит ставку на июльском заседании?', poolY:5100,poolN:4900,resolved:null,dl:'29 ИЮЛ',category:'economy'},
+];
+function initEvent(e){e.pos={yes:{sh:0,inv:0},no:{sh:0,inv:0}};e.duels={n:0,w:0};if(!e.category)e.category='culture';return e;}
+EVENTS.forEach(initEvent);
+
+// живые события из data/events.json (генерит worker/events-parser.js из Polymarket).
+// Не загрузилось — тихо остаёмся на фолбэк-наборе, игра работает всегда.
+async function loadLiveEvents(){
+  try{
+    const res=await fetch('data/events.json',{cache:'no-store'});
+    if(!res.ok)return;
+    const data=await res.json();
+    const flat=[];
+    Object.values(data.categories||{}).forEach(arr=>arr.forEach(ev=>{
+      flat.push(initEvent({
+        id:ev.id, q:ev.q, category:ev.category,
+        poolY:Math.round((ev.priceYes||0.5)*10000),
+        poolN:Math.round((1-(ev.priceYes||0.5))*10000),
+        resolved:null, dl:(ev.dl||'').replace(/-/g,'.').slice(5)||'—', url:ev.url||null,
+      }));
+    }));
+    if(flat.length){EVENTS=flat;renderCats();renderMarket();}
+  }catch(_){/* оффлайн или файла нет — остаёмся на фолбэке */}
+}
 const REPORT=[]; // отчёт игрока: резолвы событий с профитом и статой дуэлей
 const FOE_NAMES=['SHORT_KING','ГЭП_ХАНТЕР','TETHER_ENJOYER','МАРЖИН_КОЛЛ','DIAMOND_РУКИ','FUD_МАШИНА'];
 const priceY=e=>e.poolY/(e.poolY+e.poolN);
 const fmtQ=n=>Math.round(n)+' ⟠';
 const $=id=>document.getElementById(id);
 function syncBalance(){syncPlayerUI();}
+function renderCats(){
+  const bar=$('catBar');if(!bar)return;
+  bar.innerHTML=CATEGORIES.map(c=>{
+    const n=c.id==='all'?EVENTS.filter(e=>!e.resolved).length:EVENTS.filter(e=>e.category===c.id&&!e.resolved).length;
+    if(c.id!=='all'&&n===0)return ''; // прячем пустые категории
+    return `<div class="cat${c.id===curCat?' on':''}" data-c="${c.id}">${c.emoji} ${c.label}${n?' <b>'+n+'</b>':''}</div>`;
+  }).join('');
+  bar.querySelectorAll('.cat').forEach(el=>el.addEventListener('pointerdown',()=>{
+    curCat=el.dataset.c;catShowAll=false;renderCats();renderMarket();$('mktList').scrollTop=0;
+  }));
+}
+let catShowAll=false;
 function renderMarket(){
   const L=$('mktList');L.innerHTML='';
   if(REPORT.length){
@@ -47,7 +90,17 @@ function renderMarket(){
       REPORT.map(x=>`<div class="pos"><span>«${x.q}» → <b style="color:${x.res==='yes'?'var(--me)':'var(--foe)'}">${x.res==='yes'?'ДА':'НЕТ'}</b>${x.n?'<br>дуэли по событию: побед '+x.wr+'% из '+x.n:''}</span><span class="pv" style="color:${x.pay>=0?'var(--me)':'var(--foe)'}">${x.pay>=0?'+':''}${Math.round(x.pay)} ⟠</span></div>`).join('');
     L.appendChild(r);
   }
-  EVENTS.forEach(e=>{
+  let feed=curCat==='all'?EVENTS.slice():EVENTS.filter(e=>e.category===curCat);
+  // незавершённые вперёд, лимит топ-5 (не перегружаем ленту), «ещё» разворачивает
+  feed.sort((a,b)=>(a.resolved?1:0)-(b.resolved?1:0));
+  const LIMIT=5, total=feed.length;
+  if(!catShowAll&&total>LIMIT)feed=feed.slice(0,LIMIT);
+  if(!feed.length){
+    const empt=document.createElement('div');empt.className='ev';
+    empt.innerHTML='<div class="evMeta">В этой категории пока нет открытых событий</div>';
+    L.appendChild(empt);
+  }
+  feed.forEach(e=>{
     const py=priceY(e),pn=1-py;
     const card=document.createElement('div');card.className='ev';
     let html=`<div class="evQ">${e.q}</div>
@@ -71,6 +124,12 @@ function renderMarket(){
     if(!e.resolved)html+=`<div class="pos"><span style="color:var(--muted)">симуляция исхода для теста</span><span class="devBtn" data-dev="${e.id}">⚙ РЕЗОЛВ</span></div>`;
     card.innerHTML=html;L.appendChild(card);
   });
+  if(!catShowAll&&total>LIMIT){
+    const more=document.createElement('div');more.className='moreBtn';
+    more.textContent='ПОКАЗАТЬ ЕЩЁ '+(total-LIMIT)+' →';
+    more.addEventListener('pointerdown',()=>{catShowAll=true;renderMarket();});
+    L.appendChild(more);
+  }
   L.querySelectorAll('.evBtn').forEach(b=>b.addEventListener('pointerdown',()=>openSheet(b.dataset.e,b.dataset.s)));
   L.querySelectorAll('.devBtn').forEach(b=>b.addEventListener('pointerdown',()=>devResolve(b.dataset.dev)));
 }
@@ -127,6 +186,7 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('pointerdown',()
   }
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');
   $('mktList').classList.toggle('hidden',t.dataset.t!=='mkt');
+  $('catBar').classList.toggle('hidden',t.dataset.t!=='mkt');
   $('mktList2').classList.toggle('hidden',t.dataset.t!=='shop');
 }));
 

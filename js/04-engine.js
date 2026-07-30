@@ -57,7 +57,7 @@ function spawnUnits(side,key,lane){
   const dir=side==='me'?-1:1;
   const y0=side==='me'?H-14:14;
   for(let i=0;i<d.count;i++){
-    S.units.push({side,key,lane,lvl,shiftLvl,
+    S.units.push({side,key,lane,lvl,shiftLvl,seed:Math.random()*6.28,
       x:laneX(lane)+(d.count>1?(i-(d.count-1)/2)*13:0)+(Math.random()*8-4),
       y:y0-dir*i*10,
       hp,maxHp:hp,spd:d.spd*(0.92+Math.random()*.16),dir,r:d.r,
@@ -67,7 +67,7 @@ function spawnUnits(side,key,lane){
 }
 function spawnGolem(side,x,y){
   const dir=side==='me'?-1:1;
-  S.units.push({side,key:'golem',lane:clamp(Math.floor(x/W*LANES),0,LANES-1),
+  S.units.push({side,key:'golem',seed:Math.random()*6.28,lane:clamp(Math.floor(x/W*LANES),0,LANES-1),
     x,y,hp:20,maxHp:20,spd:34,dir,r:12,stealth:false,shift:.4,frozenUntil:0,blocked:false});
   addFloat(x,y-20,'ГОЛЕМ КАПИТАЛА',side==='me'?'56,225,234':'255,59,78');
 }

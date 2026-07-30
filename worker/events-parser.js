@@ -45,7 +45,7 @@ function normalize(ev) {
     category: categorize(ev),
     priceYes: yesPrice,
     volume: Number(ev.volume ?? 0),
-    dl: (ev.endDate || '').slice(0, 10),
+    dl: (ev.endDate || '').slice(0, 10), // YYYY-MM-DD; клиент сам обрежет до ММ.ДД
     url: ev.slug ? `https://polymarket.com/event/${ev.slug}` : null,
   };
 }

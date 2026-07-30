@@ -1,0 +1,26 @@
+{
+  "generated": "2026-07-29T00:00:00.000Z",
+  "source": "sample",
+  "_note": "Пример структуры. Реальный events.json генерит worker/events-parser.js. Чтобы увидеть живую ленту до запуска воркера — скопируй этот файл в data/events.json.",
+  "categories": {
+    "finance": [
+      { "id": "btc150", "q": "Биткоин выше $150K к 1 сентября?", "category": "finance", "priceYes": 0.29, "volume": 1240000, "dl": "2026-09-01", "url": null },
+      { "id": "eth", "q": "Эфир обгонит $6K в этом квартале?", "category": "finance", "priceYes": 0.41, "volume": 680000, "dl": "2026-09-30", "url": null },
+      { "id": "nvda", "q": "Nvidia отчитается выше прогноза?", "category": "finance", "priceYes": 0.63, "volume": 520000, "dl": "2026-08-27", "url": null }
+    ],
+    "economy": [
+      { "id": "fed", "q": "ФРС снизит ставку на июльском заседании?", "category": "economy", "priceYes": 0.51, "volume": 890000, "dl": "2026-07-29", "url": null },
+      { "id": "cpi", "q": "Инфляция США ниже 3% в июле?", "category": "economy", "priceYes": 0.44, "volume": 410000, "dl": "2026-08-12", "url": null }
+    ],
+    "politics": [
+      { "id": "elec", "q": "Явка на выборах превысит рекорд?", "category": "politics", "priceYes": 0.37, "volume": 730000, "dl": "2026-09-15", "url": null }
+    ],
+    "sports": [
+      { "id": "wc", "q": "Хозяева выйдут в финал турнира?", "category": "sports", "priceYes": 0.22, "volume": 950000, "dl": "2026-08-20", "url": null },
+      { "id": "ufc", "q": "Титульный бой закончится досрочно?", "category": "sports", "priceYes": 0.58, "volume": 340000, "dl": "2026-08-05", "url": null }
+    ],
+    "culture": [
+      { "id": "ai", "q": "Лопнет ли пузырь ИИ до конца лета?", "category": "culture", "priceYes": 0.62, "volume": 1100000, "dl": "2026-08-31", "url": null }
+    ]
+  }
+}

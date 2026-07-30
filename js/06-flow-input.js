@@ -85,5 +85,5 @@ cv.addEventListener('pointerdown',e=>{
 });
 
 /* ── boot ── */
-syncBalance();renderMarket();renderShop();syncDeckTab();
+syncBalance();renderCats();renderMarket();renderShop();syncDeckTab();loadLiveEvents();
 resize();requestAnimationFrame(ts=>{lastT=ts;loop(ts);});

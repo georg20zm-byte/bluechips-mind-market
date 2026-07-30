@@ -42,7 +42,7 @@ function tutScript(){
   }else if(TUT.step===2){ // демонстрация Ока: тренер прорывается
     if(!TUT.demoSpawned&&S.t>=8){
       TUT.demoSpawned=true;
-      S.units.push({side:'foe',key:'fomo',lane:0,x:laneX(0),y:14,hp:1,maxHp:1,spd:88,dir:1,r:4,stealth:false,shift:CARD_DB.fomo.shift,frozenUntil:0,blocked:false,tutDemo:true});
+      S.units.push({side:'foe',key:'fomo',lane:0,x:laneX(0),y:14,hp:1,maxHp:1,spd:88,dir:1,r:4,stealth:false,shift:CARD_DB.fomo.shift,frozenUntil:0,blocked:false,tutDemo:true,seed:Math.random()*6.28});
       addFloat(laneX(0),40,'СЛУХ ПРОСОЧИЛСЯ','255,59,78');
     }
     if(TUT.demoSpawned&&!S.units.some(u=>u.tutDemo)&&!TUT.pOko){TUT.pOko=true;
