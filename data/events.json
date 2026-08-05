@@ -1,0 +1,610 @@
+{
+  "generated": "2026-07-31T15:53:18.491Z",
+  "source": "polymarket-gamma",
+  "categories": {
+    "politics": [
+      {
+        "id": "30829",
+        "q": "Democratic Presidential Nominee 2028",
+        "category": "politics",
+        "priceYes": 0.1925,
+        "volume": 1249753549.3344421,
+        "dl": "2028-11-07",
+        "url": "https://polymarket.com/event/democratic-presidential-nominee-2028"
+      },
+      {
+        "id": "31875",
+        "q": "Republican Presidential Nominee 2028",
+        "category": "politics",
+        "priceYes": 0.022,
+        "volume": 682089379.409158,
+        "dl": "2028-11-07",
+        "url": "https://polymarket.com/event/republican-presidential-nominee-2028"
+      },
+      {
+        "id": "31552",
+        "q": "Presidential Election Winner 2028",
+        "category": "politics",
+        "priceYes": 0.2005,
+        "volume": 674652668.32466,
+        "dl": "2028-11-07",
+        "url": "https://polymarket.com/event/presidential-election-winner-2028"
+      },
+      {
+        "id": "34051",
+        "q": "Netanyahu out by...?",
+        "category": "politics",
+        "priceYes": 0,
+        "volume": 123843055.7913196,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/netanyahu-out-before-2027"
+      },
+      {
+        "id": "79987",
+        "q": "Next French Presidential Election",
+        "category": "politics",
+        "priceYes": 0.2965,
+        "volume": 116908591.21773499,
+        "dl": "2027-04-30",
+        "url": "https://polymarket.com/event/next-french-presidential-election"
+      },
+      {
+        "id": "45915",
+        "q": "Brazil Presidential Election",
+        "category": "politics",
+        "priceYes": 0.0015,
+        "volume": 116833527.97464485,
+        "dl": "2026-10-04",
+        "url": "https://polymarket.com/event/brazil-presidential-election"
+      },
+      {
+        "id": "143443",
+        "q": "Venezuela leader end of 2026?",
+        "category": "politics",
+        "priceYes": 0.005,
+        "volume": 94797271.41720138,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/venezuela-leader-end-of-2026"
+      },
+      {
+        "id": "267102",
+        "q": "Kharg Island no longer under Iranian control by...?",
+        "category": "politics",
+        "priceYes": 0.0015,
+        "volume": 68730150.09630245,
+        "dl": "2026-03-31",
+        "url": "https://polymarket.com/event/kharg-island-no-longer-under-iranian-control-by-march-31"
+      },
+      {
+        "id": "90177",
+        "q": "Will the US confirm that aliens exist by...?",
+        "category": "politics",
+        "priceYes": 0,
+        "volume": 63865940.639462054,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/will-the-us-confirm-that-aliens-exist-before-2027"
+      },
+      {
+        "id": "73130",
+        "q": "Will the U.S. invade Iran before 2027?",
+        "category": "politics",
+        "priceYes": 0.245,
+        "volume": 50935879.78477501,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/will-the-us-invade-iran-before-2027"
+      },
+      {
+        "id": "57096",
+        "q": "California Governor Election Winner",
+        "category": "politics",
+        "priceYes": 0.0005,
+        "volume": 40473702.20057906,
+        "dl": "2026-11-03",
+        "url": "https://polymarket.com/event/california-governor-election-2026"
+      },
+      {
+        "id": "34044",
+        "q": "Will China invade Taiwan by end of 2026?",
+        "category": "politics",
+        "priceYes": 0.0405,
+        "volume": 39271636.94033196,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/will-china-invade-taiwan-before-2027"
+      },
+      {
+        "id": "237598",
+        "q": "Iran leader end of 2026?",
+        "category": "politics",
+        "priceYes": 0.0655,
+        "volume": 37366697.636709996,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/iran-leader-end-of-2026"
+      },
+      {
+        "id": "118172",
+        "q": "Will Trump acquire Greenland before 2027?",
+        "category": "politics",
+        "priceYes": 0.0425,
+        "volume": 35147219.94112814,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/will-trump-acquire-greenland-before-2027"
+      },
+      {
+        "id": "81557",
+        "q": "Who will be the next Prime Minister of Israel after the next election?",
+        "category": "politics",
+        "priceYes": 0.345,
+        "volume": 30453891.914541,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/who-will-be-the-next-prime-minister-of-israel-after-the-next-election"
+      },
+      {
+        "id": "329654",
+        "q": "US obtains Iranian enriched uranium by...?",
+        "category": "politics",
+        "priceYes": 0,
+        "volume": 28982700.002197046,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/us-obtains-iranian-enriched-uranium-by"
+      },
+      {
+        "id": "449163",
+        "q": "Israel closes its airspace by...?",
+        "category": "politics",
+        "priceYes": 0,
+        "volume": 25547440.743791964,
+        "dl": "2026-05-31",
+        "url": "https://polymarket.com/event/israel-closes-its-airspace-by"
+      },
+      {
+        "id": "23784",
+        "q": "What will happen before GTA VI?",
+        "category": "politics",
+        "priceYes": 0.505,
+        "volume": 23584554.923860073,
+        "dl": "2026-07-31",
+        "url": "https://polymarket.com/event/what-will-happen-before-gta-vi"
+      },
+      {
+        "id": "72347",
+        "q": "Will the Iranian regime fall before 2027?",
+        "category": "politics",
+        "priceYes": 0.085,
+        "volume": 23396896.837489005,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/will-the-iranian-regime-fall-by-the-end-of-2026"
+      },
+      {
+        "id": "60182",
+        "q": "Nobel Peace Prize Winner 2026",
+        "category": "politics",
+        "priceYes": 0.033,
+        "volume": 23042715.212677997,
+        "dl": "2026-10-10",
+        "url": "https://polymarket.com/event/nobel-peace-prize-winner-2026-139"
+      }
+    ],
+    "finance": [
+      {
+        "id": "411239",
+        "q": "Next Prime Minister of Ethiopia?",
+        "category": "finance",
+        "priceYes": 0.96,
+        "volume": 264983029.71798897,
+        "dl": "2026-06-01",
+        "url": "https://polymarket.com/event/next-prime-minister-of-ethiopia"
+      },
+      {
+        "id": "89502",
+        "q": "What price will Bitcoin hit in 2026?",
+        "category": "finance",
+        "priceYes": 0.5,
+        "volume": 50702997.318665,
+        "dl": "2027-01-01",
+        "url": "https://polymarket.com/event/what-price-will-bitcoin-hit-before-2027"
+      },
+      {
+        "id": "36173",
+        "q": "When will Bitcoin hit $150k?",
+        "category": "finance",
+        "priceYes": 0,
+        "volume": 27098612.59758101,
+        "dl": "2027-01-01",
+        "url": "https://polymarket.com/event/when-will-bitcoin-hit-150k"
+      },
+      {
+        "id": "655630",
+        "q": "What price will Bitcoin hit in July?",
+        "category": "finance",
+        "priceYes": 0.0005,
+        "volume": 24609772.807501,
+        "dl": "2026-08-01",
+        "url": "https://polymarket.com/event/what-price-will-bitcoin-hit-in-july-2026"
+      },
+      {
+        "id": "310530",
+        "q": "Iran agrees to surrender enriched uranium stockpile by...?",
+        "category": "finance",
+        "priceYes": 0,
+        "volume": 17609188.34859198,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/iran-agrees-to-surrender-enriched-uranium-stockpile-by"
+      },
+      {
+        "id": "106811",
+        "q": "Bitcoin all time high by ___?",
+        "category": "finance",
+        "priceYes": 0,
+        "volume": 9424637.813799905,
+        "dl": "2027-01-01",
+        "url": "https://polymarket.com/event/bitcoin-all-time-high-by"
+      },
+      {
+        "id": "89519",
+        "q": "What price will Ethereum hit in 2026?",
+        "category": "finance",
+        "priceYes": 0.16,
+        "volume": 9237804.022552,
+        "dl": "2027-01-01",
+        "url": "https://polymarket.com/event/what-price-will-ethereum-hit-before-2027"
+      },
+      {
+        "id": "46724",
+        "q": "Will MetaMask launch a token by ___ ?",
+        "category": "finance",
+        "priceYes": 0,
+        "volume": 8648381.213762004,
+        "dl": "2027-01-01",
+        "url": "https://polymarket.com/event/will-metamask-launch-a-token-in-2025"
+      },
+      {
+        "id": "44955",
+        "q": "Will Base launch a token by ___ ?",
+        "category": "finance",
+        "priceYes": 0.37,
+        "volume": 7480650.613256087,
+        "dl": "2028-01-01",
+        "url": "https://polymarket.com/event/will-base-launch-a-token-in-2025-341"
+      },
+      {
+        "id": "79048",
+        "q": "IPOs before 2027?",
+        "category": "finance",
+        "priceYes": 0.3015,
+        "volume": 6911959.424400994,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/ipos-before-2027"
+      },
+      {
+        "id": "52130",
+        "q": "Opensea FDV above ___ one day after launch?",
+        "category": "finance",
+        "priceYes": 0.153,
+        "volume": 6599217.722366,
+        "dl": "2027-01-01",
+        "url": "https://polymarket.com/event/opensea-fdv-above-one-day-after-launch"
+      },
+      {
+        "id": "214405",
+        "q": "Predict.fun FDV above ___ one day after launch?",
+        "category": "finance",
+        "priceYes": 0.879,
+        "volume": 6047588.057813,
+        "dl": "2028-01-01",
+        "url": "https://polymarket.com/event/predictfun-fdv-above-one-day-after-launch"
+      },
+      {
+        "id": "655631",
+        "q": "What price will Ethereum hit in July?",
+        "category": "finance",
+        "priceYes": 0.0005,
+        "volume": 5798310.892326999,
+        "dl": "2026-08-01",
+        "url": "https://polymarket.com/event/what-price-will-ethereum-hit-in-july-2026"
+      },
+      {
+        "id": "119671",
+        "q": "Puffpaw FDV above ___ one day after launch?",
+        "category": "finance",
+        "priceYes": 0.385,
+        "volume": 5449501.953937982,
+        "dl": "2027-01-01",
+        "url": "https://polymarket.com/event/puffpaw-fdv-above-one-day-after-launch"
+      },
+      {
+        "id": "196914",
+        "q": "Largest IPO by market cap in 2026?",
+        "category": "finance",
+        "priceYes": 0.925,
+        "volume": 5006880.676115,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/largest-ipo-by-market-cap-in-2026-287"
+      },
+      {
+        "id": "153719",
+        "q": "Will Satoshi move any Bitcoin in 2026?",
+        "category": "finance",
+        "priceYes": 0.0545,
+        "volume": 4520947.132423001,
+        "dl": "2027-01-01",
+        "url": "https://polymarket.com/event/will-satoshi-move-any-bitcoin-in-2026"
+      }
+    ],
+    "sports": [
+      {
+        "id": "100371",
+        "q": "F1 Drivers' Champion",
+        "category": "sports",
+        "priceYes": 0.0365,
+        "volume": 200603856.43606865,
+        "dl": "2026-12-06",
+        "url": "https://polymarket.com/event/2026-f1-drivers-champion"
+      },
+      {
+        "id": "202857",
+        "q": "Pro Football: 2027 Champion",
+        "category": "sports",
+        "priceYes": 0.0075,
+        "volume": 42396767.287338994,
+        "dl": "2027-02-14",
+        "url": "https://polymarket.com/event/pro-football-2027-champion-20260729185915366"
+      },
+      {
+        "id": "179312",
+        "q": "MLB World Series Champion 2026",
+        "category": "sports",
+        "priceYes": 0.115,
+        "volume": 37318734.518333,
+        "dl": "2026-10-31",
+        "url": "https://polymarket.com/event/mlb-world-series-champion-2026"
+      },
+      {
+        "id": "100394",
+        "q": "F1 Constructors' Champion",
+        "category": "sports",
+        "priceYes": 0.0155,
+        "volume": 28146660.98570658,
+        "dl": "2026-12-06",
+        "url": "https://polymarket.com/event/f1-constructors-champion"
+      },
+      {
+        "id": "48361",
+        "q": "Ballon d'Or Winner 2026",
+        "category": "sports",
+        "priceYes": 0.0965,
+        "volume": 24251433.326679997,
+        "dl": "2026-10-31",
+        "url": "https://polymarket.com/event/ballon-dor-winner-2026"
+      },
+      {
+        "id": "200782",
+        "q": "MLS Cup Winner 2026",
+        "category": "sports",
+        "priceYes": 0.003,
+        "volume": 19557478.154993996,
+        "dl": "2026-12-19",
+        "url": "https://polymarket.com/event/mls-cup-winner-2026"
+      },
+      {
+        "id": "478277",
+        "q": "NBA: 2027 Champion",
+        "category": "sports",
+        "priceYes": 0.0095,
+        "volume": 14532981.242952999,
+        "dl": "2027-07-01",
+        "url": "https://polymarket.com/event/nba-2027-champion"
+      },
+      {
+        "id": "630058",
+        "q": "NBA: 2026-27 Rookie of the Year",
+        "category": "sports",
+        "priceYes": 0.205,
+        "volume": 7831175.18624,
+        "dl": "2027-05-31",
+        "url": "https://polymarket.com/event/nba-2026-27-rookie-of-the-year-20260624161716143"
+      },
+      {
+        "id": "203710",
+        "q": "Where will Maxx Crosby play in 2026?",
+        "category": "sports",
+        "priceYes": 0.0005,
+        "volume": 6321198.664402999,
+        "dl": "2026-09-01",
+        "url": "https://polymarket.com/event/where-will-maxx-crosby-play-in-2026"
+      },
+      {
+        "id": "665821",
+        "q": "LoL: Bilibili Gaming vs LYON (BO5) - Mid-Season Invitational Playoffs",
+        "category": "sports",
+        "priceYes": 1,
+        "volume": 6301216.179315,
+        "dl": "2026-07-06",
+        "url": "https://polymarket.com/event/lol-blg-ly-2026-07-05"
+      },
+      {
+        "id": "139255",
+        "q": "2026 Women’s US Open Winner (Tennis)",
+        "category": "sports",
+        "priceYes": 0.275,
+        "volume": 6283101.771811,
+        "dl": "2026-09-13",
+        "url": "https://polymarket.com/event/2026-womens-us-open-winner-tennis"
+      },
+      {
+        "id": "203716",
+        "q": "Pro Football: 2027 NFC Champion ",
+        "category": "sports",
+        "priceYes": 0.0565,
+        "volume": 6266927.495886,
+        "dl": "2027-01-25",
+        "url": "https://polymarket.com/event/pro-football-2027-nfc-champion"
+      },
+      {
+        "id": "212252",
+        "q": "Where will Tyreek Hill play in 2026?",
+        "category": "sports",
+        "priceYes": 0.491,
+        "volume": 5104155.642182,
+        "dl": "2026-08-31",
+        "url": "https://polymarket.com/event/where-will-tyreek-hill-play-in-2026"
+      },
+      {
+        "id": "139236",
+        "q": "2026 Men’s US Open Winner (Tennis)",
+        "category": "sports",
+        "priceYes": 0.52,
+        "volume": 4768270.861719,
+        "dl": "2026-09-13",
+        "url": "https://polymarket.com/event/2026-mens-us-open-winner-tennis"
+      },
+      {
+        "id": "713274",
+        "q": "LoL: HANJIN BRION vs Kiwoom DRX (BO3) - LCK Round 3-4 Rise Group",
+        "category": "sports",
+        "priceYes": 1,
+        "volume": 4443456.785051999,
+        "dl": "2026-07-31",
+        "url": "https://polymarket.com/event/lol-bro2-drx-2026-07-31"
+      }
+    ],
+    "culture": [
+      {
+        "id": "90178",
+        "q": "Will Jesus Christ return before 2027?",
+        "category": "culture",
+        "priceYes": 0.0195,
+        "volume": 64865093.54519788,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/will-jesus-christ-return-before-2027"
+      },
+      {
+        "id": "145916",
+        "q": "New \"Stranger Things\" episode released by...? ",
+        "category": "culture",
+        "priceYes": 0,
+        "volume": 30872139.227346,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/new-stranger-things-episode-released-by-wednesday"
+      },
+      {
+        "id": "86832",
+        "q": "Which companies will be acquired before 2027?",
+        "category": "culture",
+        "priceYes": 0.37,
+        "volume": 18108638.864262003,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/which-companies-will-be-acquired-before-2027"
+      },
+      {
+        "id": "448037",
+        "q": "Hantavirus pandemic in 2026?",
+        "category": "culture",
+        "priceYes": 0.0355,
+        "volume": 17376320.39877103,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/hantavirus-pandemic-in-2026"
+      },
+      {
+        "id": "631914",
+        "q": "What will WTI Crude Oil (WTI) hit in July 2026?",
+        "category": "culture",
+        "priceYes": 0.0005,
+        "volume": 16862703.668967,
+        "dl": "2026-08-01",
+        "url": "https://polymarket.com/event/what-price-will-wti-hit-in-july-2026"
+      },
+      {
+        "id": "556131",
+        "q": "Which company has best AI model end of July?",
+        "category": "culture",
+        "priceYes": 0.0005,
+        "volume": 8217848.099903001,
+        "dl": "2026-07-31",
+        "url": "https://polymarket.com/event/which-company-has-best-ai-model-end-of-july-299"
+      },
+      {
+        "id": "634802",
+        "q": "Iran full airspace closure by...?",
+        "category": "culture",
+        "priceYes": 0,
+        "volume": 7073494.365631009,
+        "dl": "2026-08-31",
+        "url": "https://polymarket.com/event/iran-full-airspace-closure-byptptpt-20260625195253028"
+      }
+    ],
+    "economy": [
+      {
+        "id": "51456",
+        "q": "How many Fed rate cuts in 2026?",
+        "category": "economy",
+        "priceYes": 0.8935,
+        "volume": 45701175.959469,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/how-many-fed-rate-cuts-in-2026"
+      },
+      {
+        "id": "455867",
+        "q": "Strait of Hormuz traffic returns to normal by July 31?",
+        "category": "economy",
+        "priceYes": 0.0005,
+        "volume": 23532030.04081301,
+        "dl": "2026-07-31",
+        "url": "https://polymarket.com/event/strait-of-hormuz-traffic-returns-to-normal-by-july-31"
+      },
+      {
+        "id": "481717",
+        "q": "Fed Decision in September?",
+        "category": "economy",
+        "priceYes": 0.0105,
+        "volume": 9584960.086082999,
+        "dl": "2026-09-16",
+        "url": "https://polymarket.com/event/fed-decision-in-september-762"
+      },
+      {
+        "id": "630845",
+        "q": "Largest Company end of July?",
+        "category": "economy",
+        "priceYes": 0.9875,
+        "volume": 7502008.743588999,
+        "dl": "2026-07-31",
+        "url": "https://polymarket.com/event/largest-company-end-of-july-20260624192302727"
+      },
+      {
+        "id": "159954",
+        "q": "What will the Fed rate be at the end of 2026?",
+        "category": "economy",
+        "priceYes": 0.0055,
+        "volume": 6734828.991686,
+        "dl": "2026-12-09",
+        "url": "https://polymarket.com/event/what-will-the-fed-rate-be-at-the-end-of-2026"
+      },
+      {
+        "id": "455875",
+        "q": "Strait of Hormuz traffic returns to normal by December 31?",
+        "category": "economy",
+        "priceYes": 0.505,
+        "volume": 6370443.3245129995,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/strait-of-hormuz-traffic-returns-to-normal-by-december-31"
+      },
+      {
+        "id": "101936",
+        "q": "Fed rate hike in 2026?",
+        "category": "economy",
+        "priceYes": 0.665,
+        "volume": 6057396.404432999,
+        "dl": "2026-12-09",
+        "url": "https://polymarket.com/event/fed-rate-hike-in-2026"
+      },
+      {
+        "id": "79041",
+        "q": "Largest Company end of December 2026?",
+        "category": "economy",
+        "priceYes": 0.585,
+        "volume": 5058236.524663,
+        "dl": "2026-12-31",
+        "url": "https://polymarket.com/event/largest-company-end-of-december-2026"
+      }
+    ]
+  }
+}
